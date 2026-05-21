@@ -353,7 +353,15 @@ function ReportPage() {
               </div>
             </div>
             <div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
+                {report.verdict === "谨慎" && (
+                  <div
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${verdictStyle.bg} ${verdictStyle.text} ${verdictStyle.ring}`}
+                  >
+                    <AlertTriangle className="h-4 w-4" />
+                    一般，有更好的选择
+                  </div>
+                )}
                 <div
                   className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${verdictStyle.bg} ${verdictStyle.text} ${verdictStyle.ring}`}
                 >
