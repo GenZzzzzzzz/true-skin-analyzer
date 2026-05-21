@@ -116,6 +116,11 @@
       0 30px 80px -20px rgba(0, 0, 0, 0.65),
       0 10px 30px -10px color-mix(in oklab, var(--accent) 25%, transparent);
   }
+  /* 禁用 hover 位移，避免按钮在悬停瞬间被抬起导致点击丢失 */
+  .stereo-card.no-lift:hover {
+    transform: none;
+  }
+
   /* Premium glowing CTA */
   .cta-glow {
     background: linear-gradient(135deg, oklch(0.88 0.16 195), oklch(0.74 0.18 200));
