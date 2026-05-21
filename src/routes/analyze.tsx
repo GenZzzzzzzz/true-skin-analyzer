@@ -179,15 +179,22 @@ function AnalyzePage() {
           </div>
         )}
 
-        {mode === "preview" && previewUrl && (
+        {mode === "preview" && previewUrl && prepared && (
           <div className="glass rounded-3xl p-6">
             <div className="overflow-hidden rounded-2xl">
               <img src={previewUrl} alt="待分析照片" className="w-full" />
             </div>
+            <div className="mt-4 flex flex-wrap gap-2 justify-center text-xs text-muted-foreground">
+              {prepared.zones.map((z) => (
+                <span key={z.zone} className="rounded-full border border-border px-2.5 py-1">
+                  {z.label}
+                </span>
+              ))}
+            </div>
             <div className="mt-5 flex justify-center gap-3">
               <button
                 onClick={() => {
-                  setPreviewBase64(null);
+                  setPrepared(null);
                   setPreviewUrl(null);
                   setMode("choose");
                 }}
