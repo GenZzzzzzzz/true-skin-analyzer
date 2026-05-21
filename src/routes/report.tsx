@@ -332,10 +332,6 @@ function ReportPage() {
             </div>
             <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70 shadow-[0_0_8px] shadow-emerald-400/60" />
-                安全
-              </span>
-              <span className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80 shadow-[0_0_8px] shadow-amber-400/70" />
                 留意
               </span>
@@ -365,16 +361,13 @@ function ReportPage() {
               <div className="absolute inset-0">
                 {FACE_ZONES.map((z) => {
                   const v = getZoneIntensity(z, report.riskRadar);
-                  if (v < 15) return null; // 太低就不画
+                  if (v < 45) return null; // 只显示需留意 / 重灾区
                   const isHot = v >= 70;
-                  const isMid = v >= 45 && v < 70;
                   const color = isHot
                     ? "239,68,68" // rose-500
-                    : isMid
-                      ? "251,191,36" // amber-400
-                      : "52,211,153"; // emerald-400
-                  const alpha = 0.18 + (v / 100) * 0.55;
-                  const sizePx = z.size + (v / 100) * 28;
+                    : "251,191,36"; // amber-400
+                  const alpha = 0.35 + (v / 100) * 0.5;
+                  const sizePx = z.size * 1.7 + (v / 100) * 50;
                   return (
                     <div
                       key={z.id}
@@ -387,8 +380,8 @@ function ReportPage() {
                           width: `${sizePx}px`,
                           height: `${sizePx}px`,
                           borderRadius: "9999px",
-                          background: `radial-gradient(circle, rgba(${color},${alpha}) 0%, rgba(${color},${alpha * 0.5}) 35%, transparent 70%)`,
-                          filter: "blur(2px)",
+                          background: `radial-gradient(circle, rgba(${color},${alpha}) 0%, rgba(${color},${alpha * 0.6}) 45%, transparent 75%)`,
+                          filter: "blur(4px)",
                         }}
                       />
                     </div>
