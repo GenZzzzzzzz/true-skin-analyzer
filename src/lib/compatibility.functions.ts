@@ -26,6 +26,21 @@ D. compatibilityScore = round( 100 - 0.35*irritation - 0.25*allergy - 0.20*comed
 E. verdict 由分数决定：>=75 推荐；55-74 谨慎；<55 不推荐。**不要凭感觉覆盖。**
 F. risks 列表必须与 riskRadar 中得分 ≥35 的维度一一对应，severity 按 35-55=低、56-75=中、>75=高。
 G. 中文输出，所有判断要写出"哪些成分 × 哪个肤质特征"。仅供日常护肤参考，不构成医学诊断。
+H. Skin Age Impact (skinAgeImpact)：假设用户每日规律使用本产品 12 个月，按再生生物学映射估算"皮肤生物学年龄变化年数"：
+   * 起始 years = 0.0
+   * 致老化机制 (氧化应激/糖化/慢性炎症/屏障破坏/光敏化)：
+       高风险成分 × 易感特征  每条 +0.6
+       中风险组合              每条 +0.3
+   * 抗老化/再生机制 (抗氧化、促胶原、屏障修复、senolytic-like)：
+       明确证据组合            每条 -0.5
+       潜在支持                每条 -0.2
+   * 若产品为防晒且 SPF≥30 且 PA+++ 以上，额外 -0.8 (抑制光老化)
+   * 钳制到 [-2.0, +5.0]，保留 1 位小数
+   * direction：years>+0.3 → aging；-0.3..+0.3 → neutral；<-0.3 → rejuvenating
+   * confidence：成分清单完整且与肤质特征对应充分 → 高；部分识别 → 中；识别度低 → 低
+   * drivers：列出贡献最大的 2-4 项 (factor=成分或组合, mechanism=简短机制, contributionYears=带符号年数)，其和≈years
+   * caveat：固定写"基于成分-肤质再生生物学映射的估算模型，不构成医学诊断。"
+   horizon 固定为 "12_months"。
 
 必须通过 submit_compatibility 工具返回结构化结果。同样输入必须产生同样输出。`;
 
