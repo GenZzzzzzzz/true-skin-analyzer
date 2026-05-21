@@ -271,7 +271,7 @@ function FilmStrip({
     <div
       className="relative hidden sm:block"
       style={{
-        width: 158,
+        width: 184,
         height: VISIBLE * FRAME_H + (VISIBLE - 1) * GAP,
       }}
     >
@@ -313,7 +313,7 @@ function FilmStrip({
 
       <div
         className="absolute inset-y-0 left-1/2 -translate-x-1/2 overflow-hidden"
-        style={{ width: 112 }}
+        style={{ width: 148 }}
       >
         <div
           className="absolute left-0 right-0"
@@ -370,9 +370,9 @@ function Perforations({ side }: { side: "left" | "right" }) {
       className="absolute top-0 bottom-0 z-10"
       style={{
         [side]: 0,
-        width: 22,
+        width: 16,
         background:
-          "repeating-linear-gradient(to bottom, transparent 0 8px, #f6f4ef 8px 22px, transparent 22px 31px)",
+          "repeating-linear-gradient(to bottom, transparent 0 8px, #f6f4ef 8px 16px, transparent 16px 25px)",
         WebkitMaskImage:
           "linear-gradient(to right, black, black)",
       }}
