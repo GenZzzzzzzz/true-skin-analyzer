@@ -157,10 +157,10 @@ function SkinAgeImpactCard({ impact }: { impact: SkinAgeImpact }) {
     : isRejuv
       ? { text: "text-emerald-300", chip: "bg-emerald-500/15 border-emerald-400/40 text-emerald-200", glow: "oklch(0.75 0.18 165)" }
       : { text: "text-muted-foreground", chip: "bg-white/5 border-white/15 text-muted-foreground", glow: "oklch(0.7 0.05 220)" };
-  const label = isAging ? "▲ 加速衰老" : isRejuv ? "▼ 有抗老收益" : "● 基本中性";
+  const label = isAging ? "▲ 老化轨迹加速" : isRejuv ? "▼ 老化轨迹减缓" : "● 基本中性";
 
-  // pointer on -2 .. +5 scale
-  const min = -2, max = 5;
+  // pointer on -0.6 .. +0.8 scale (tightened to match clamped model output)
+  const min = -0.6, max = 0.8;
   const pct = Math.max(0, Math.min(1, (years - min) / (max - min))) * 100;
 
   return (
@@ -170,7 +170,7 @@ function SkinAgeImpactCard({ impact }: { impact: SkinAgeImpact }) {
         style={{ background: `radial-gradient(circle, ${tone.glow}, transparent 70%)` }}
       />
       <div className="text-xs uppercase tracking-widest text-muted-foreground">
-        Skin Age Impact · 持续使用 12 个月
+        皮肤老化轨迹影响 · 持续使用 12 个月
       </div>
       <div className="mt-2 grid gap-8 md:grid-cols-[auto,1fr] items-center">
         <div className="text-center md:text-left">
@@ -184,9 +184,10 @@ function SkinAgeImpactCard({ impact }: { impact: SkinAgeImpact }) {
         </div>
         <div>
           <div className="text-sm text-foreground/80 leading-relaxed">
-            预计这款产品规律使用一年后，会让你的<strong className={tone.text}>皮肤生物学年龄</strong>
-            {isAging ? "比实际年龄多走" : isRejuv ? "相对实际年龄回拨" : "几乎不变化，约"}
-            <span className={`mx-1 font-semibold ${tone.text}`}>{Math.abs(years).toFixed(1)} 岁</span>。
+            预计每日规律使用一年后，相对自然基线，你的<strong className={tone.text}>光老化外观轨迹</strong>
+            {isAging ? "将加速约" : isRejuv ? "将减缓约" : "几乎不偏移，约"}
+            <span className={`mx-1 font-semibold ${tone.text}`}>{Math.abs(years).toFixed(1)} 岁</span>
+            <span className="text-muted-foreground">（非分子层面生物学年龄）</span>。
           </div>
           {/* scale bar */}
           <div className="mt-4">
@@ -197,13 +198,14 @@ function SkinAgeImpactCard({ impact }: { impact: SkinAgeImpact }) {
               />
             </div>
             <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
-              <span>-2 岁 (抗老)</span>
+              <span>-0.6 岁 (减缓)</span>
               <span>0</span>
-              <span>+5 岁 (加速衰老)</span>
+              <span>+0.8 岁 (加速)</span>
             </div>
           </div>
         </div>
       </div>
+
 
       {/* Drivers */}
       <div className="mt-6 grid gap-2">
