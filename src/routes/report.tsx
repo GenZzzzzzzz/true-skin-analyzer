@@ -12,9 +12,50 @@ import { SiteHeader } from "@/components/SiteHeader";
 import {
   type CompatibilityReport,
   RISK_RADAR_LABELS,
+  type RiskRadar,
   type Severity,
   type Verdict,
 } from "@/lib/compatibility-types";
+import faceMeshImg from "@/assets/face-mesh.png";
+
+// 面部分区 → 在 wireframe 图上的相对位置 (%)，以及该分区主要受哪些风险影响
+type FaceZone = {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  size: number; // hotspot 基础半径 (px on 1x)
+  drivers: Array<keyof RiskRadar>;
+  hint: string;
+};
+
+const FACE_ZONES: FaceZone[] = [
+  { id: "forehead", label: "额头 · T 区", x: 22, y: 17, size: 56, drivers: ["oiliness", "comedogenic"], hint: "出油 / 闭口高发区" },
+  { id: "nose", label: "鼻翼 · 黑头区", x: 22, y: 47, size: 42, drivers: ["oiliness", "comedogenic", "irritation"], hint: "黑头、毛孔粗大" },
+  { id: "eye", label: "眼周", x: 29, y: 31, size: 38, drivers: ["allergy", "irritation", "dryness"], hint: "皮肤最薄，易刺痛 / 过敏" },
+  { id: "left-cheek", label: "左颊", x: 11, y: 52, size: 50, drivers: ["dryness", "irritation", "photo"], hint: "干燥 / 泛红 / 晒伤区" },
+  { id: "right-cheek", label: "右颊", x: 33, y: 52, size: 50, drivers: ["dryness", "irritation", "photo"], hint: "干燥 / 泛红 / 晒伤区" },
+  { id: "chin", label: "下巴", x: 22, y: 76, size: 46, drivers: ["comedogenic", "oiliness"], hint: "周期性闷痘高发区" },
+  { id: "jaw-side", label: "下颌线", x: 72, y: 74, size: 48, drivers: ["comedogenic", "irritation"], hint: "闷痘 / 摩擦刺激" },
+  { id: "temple", label: "太阳穴", x: 62, y: 28, size: 40, drivers: ["photo", "dryness"], hint: "易晒伤 / 干纹" },
+];
+
+function getZoneIntensity(zone: FaceZone, radar: RiskRadar): number {
+  // 取该分区主要驱动维度的最大值作为强度
+  let max = 0;
+  for (const k of zone.drivers) {
+    const v = radar[k] ?? 0;
+    if (v > max) max = v;
+  }
+  return max; // 0-100
+}
+
+function intensityLabel(v: number): { text: string; color: string } {
+  if (v >= 70) return { text: "重灾区", color: "text-rose-300" };
+  if (v >= 45) return { text: "需留意", color: "text-amber-300" };
+  if (v >= 25) return { text: "轻微", color: "text-emerald-300" };
+  return { text: "安全", color: "text-muted-foreground" };
+}
 
 const VERDICT_MAP: Record<Verdict, { label: string; sub: string }> = {
   推荐: { label: "放心用", sub: "" },
@@ -279,6 +320,149 @@ function ReportPage() {
             </ClientOnly>
           </div>
         </div>
+
+        {/* Face hotspot map */}
+        <div className="mt-6 stereo-card rounded-3xl p-6 md:p-8 overflow-hidden">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="font-display text-xl font-semibold">面部风险分布</h2>
+              <div className="text-xs text-muted-foreground mt-1">
+                红色越深 = 该区域越可能出问题 · 基于成分 × 你皮肤的反应推断
+              </div>
+            </div>
+            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70 shadow-[0_0_8px] shadow-emerald-400/60" />
+                安全
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80 shadow-[0_0_8px] shadow-amber-400/70" />
+                留意
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-rose-500 shadow-[0_0_12px] shadow-rose-500/80" />
+                重灾区
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-6 md:grid-cols-[1.4fr,1fr] items-start">
+            {/* Image + hotspots */}
+            <div
+              className="relative rounded-2xl overflow-hidden border border-white/10"
+              style={{
+                background:
+                  "radial-gradient(120% 80% at 50% 30%, oklch(0.22 0.02 240 / 0.7), oklch(0.08 0.01 240 / 0.95))",
+              }}
+            >
+              <img
+                src={faceMeshImg}
+                alt="面部分区示意"
+                className="w-full h-auto block opacity-90 mix-blend-luminosity"
+                draggable={false}
+              />
+              {/* Hotspot overlay */}
+              <div className="absolute inset-0">
+                {FACE_ZONES.map((z) => {
+                  const v = getZoneIntensity(z, report.riskRadar);
+                  if (v < 15) return null; // 太低就不画
+                  const isHot = v >= 70;
+                  const isMid = v >= 45 && v < 70;
+                  const color = isHot
+                    ? "239,68,68" // rose-500
+                    : isMid
+                      ? "251,191,36" // amber-400
+                      : "52,211,153"; // emerald-400
+                  const alpha = 0.18 + (v / 100) * 0.55;
+                  const sizePx = z.size + (v / 100) * 28;
+                  return (
+                    <div
+                      key={z.id}
+                      className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ left: `${z.x}%`, top: `${z.y}%` }}
+                    >
+                      <div
+                        className={isHot ? "animate-pulse" : ""}
+                        style={{
+                          width: `${sizePx}px`,
+                          height: `${sizePx}px`,
+                          borderRadius: "9999px",
+                          background: `radial-gradient(circle, rgba(${color},${alpha}) 0%, rgba(${color},${alpha * 0.5}) 35%, transparent 70%)`,
+                          filter: "blur(2px)",
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+                {/* Labels */}
+                {FACE_ZONES.map((z) => {
+                  const v = getZoneIntensity(z, report.riskRadar);
+                  if (v < 45) return null;
+                  const isHot = v >= 70;
+                  return (
+                    <div
+                      key={`${z.id}-label`}
+                      className="absolute -translate-x-1/2 pointer-events-none"
+                      style={{ left: `${z.x}%`, top: `calc(${z.y}% - 4px)` }}
+                    >
+                      <div
+                        className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur-md border ${
+                          isHot
+                            ? "bg-rose-500/25 border-rose-300/40 text-rose-100"
+                            : "bg-amber-400/20 border-amber-300/40 text-amber-100"
+                        }`}
+                      >
+                        {z.label}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Zone breakdown list */}
+            <div className="space-y-2">
+              {[...FACE_ZONES]
+                .map((z) => ({ z, v: getZoneIntensity(z, report.riskRadar) }))
+                .sort((a, b) => b.v - a.v)
+                .map(({ z, v }) => {
+                  const meta = intensityLabel(v);
+                  return (
+                    <div
+                      key={z.id}
+                      className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2.5"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{z.label}</div>
+                        <div className="text-[11px] text-muted-foreground truncate">
+                          {z.hint}
+                        </div>
+                      </div>
+                      <div className="w-20 h-1.5 rounded-full bg-white/5 overflow-hidden shrink-0">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${Math.max(4, v)}%`,
+                            background:
+                              v >= 70
+                                ? "linear-gradient(90deg, oklch(0.7 0.22 25), oklch(0.6 0.25 15))"
+                                : v >= 45
+                                  ? "linear-gradient(90deg, oklch(0.8 0.18 75), oklch(0.7 0.2 55))"
+                                  : "linear-gradient(90deg, oklch(0.78 0.15 165), oklch(0.7 0.16 195))",
+                          }}
+                        />
+                      </div>
+                      <span className={`text-[11px] w-12 text-right ${meta.color}`}>
+                        {meta.text}
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+
+
 
         {/* Risks list */}
         {report.risks.length > 0 && (
