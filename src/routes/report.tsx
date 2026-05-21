@@ -314,9 +314,9 @@ function ReportPage() {
           </Link>
         </div>
 
-        {/* Hero: score ring + verdict + 3D face */}
-        <div className="grid gap-6 lg:grid-cols-[1fr,auto] items-stretch">
+        {/* Hero: score ring + verdict */}
         <div className="stereo-card rounded-[2rem] p-8 md:p-10">
+
 
           <div className="grid gap-8 md:grid-cols-[auto,1fr] items-center">
             <div className="relative h-44 w-44 mx-auto md:mx-0">
