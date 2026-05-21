@@ -143,7 +143,7 @@ function Home() {
         </div>
 
         {/* The two capture cards */}
-        <div className="grid gap-8 sm:gap-12 md:grid-cols-2 max-w-4xl mx-auto">
+        <div className="grid gap-10 sm:gap-20 md:gap-24 md:grid-cols-2 max-w-5xl mx-auto px-2 sm:px-6">
           <CaptureCard
             kind="face"
             title="你的脸"
