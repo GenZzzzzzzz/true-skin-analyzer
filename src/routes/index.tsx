@@ -124,7 +124,7 @@ function Home() {
       <SiteHeader />
 
       <main className="mx-auto max-w-6xl px-6 pt-12 pb-20">
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 backdrop-blur px-4 py-1.5 text-xs text-muted-foreground">
             <Sparkles className="h-3 w-3 text-accent" />
             上传你的脸 + 一款产品，AI 分析是否适合
@@ -135,6 +135,11 @@ function Home() {
           <p className="mx-auto mt-5 max-w-xl text-base md:text-lg text-muted-foreground">
             两张照片，10 秒判断刺激、过敏、闷痘、光敏等 6 项风险。
           </p>
+        </div>
+
+        {/* Rotating 3D face hero */}
+        <div className="mb-12 flex justify-center">
+          <RotatingFaceHero />
         </div>
 
         {/* The two capture cards */}
