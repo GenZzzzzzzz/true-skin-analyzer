@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
-import { Camera, Upload, AlertTriangle, Loader2, RotateCcw } from "lucide-react";
+import { Camera, Upload, Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { preprocessImage, type PreprocessResult } from "@/lib/image-preprocess";
 import { analyzeSkin } from "@/lib/skin.functions";
@@ -107,36 +107,26 @@ function AnalyzePage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-4xl px-6 py-12">
-        <div className="mb-10 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold">开始肤质分析</h1>
-          <p className="mt-2 text-muted-foreground">在自然光下正面拍摄，效果最佳</p>
-        </div>
-
+      <main className="mx-auto max-w-2xl px-6 py-16">
         {error && (
-          <div className="mb-6 flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm">
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-            <span>{error}</span>
-          </div>
+          <div className="mb-6 text-center text-sm text-destructive">{error}</div>
         )}
 
         {mode === "choose" && (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">
             <button
               onClick={startCamera}
-              className="group glass rounded-3xl p-10 text-center transition-all hover:border-accent/40 hover:glow-accent"
+              className="border border-border rounded-2xl py-16 text-center hover:border-foreground transition-colors"
             >
-              <Camera className="mx-auto h-12 w-12 text-accent" strokeWidth={1.5} />
-              <div className="mt-4 font-display text-xl font-semibold">使用摄像头</div>
-              <div className="mt-1 text-sm text-muted-foreground">实时拍摄一张正面照</div>
+              <Camera className="mx-auto h-6 w-6" strokeWidth={1.5} />
+              <div className="mt-4 text-sm">拍摄</div>
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="group glass rounded-3xl p-10 text-center transition-all hover:border-accent/40"
+              className="border border-border rounded-2xl py-16 text-center hover:border-foreground transition-colors"
             >
-              <Upload className="mx-auto h-12 w-12 text-foreground" strokeWidth={1.5} />
-              <div className="mt-4 font-display text-xl font-semibold">上传照片</div>
-              <div className="mt-1 text-sm text-muted-foreground">JPG / PNG · 无滤镜效果最佳</div>
+              <Upload className="mx-auto h-6 w-6" strokeWidth={1.5} />
+              <div className="mt-4 text-sm">上传</div>
             </button>
             <input
               ref={fileInputRef}
@@ -149,30 +139,24 @@ function AnalyzePage() {
         )}
 
         {mode === "camera" && (
-          <div className="glass rounded-3xl p-4">
+          <div>
             <div className="relative overflow-hidden rounded-2xl bg-black aspect-square">
               <video ref={videoRef} className="h-full w-full object-cover" playsInline muted />
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <div
-                  className="h-3/4 w-3/5 rounded-[50%] border-2 border-accent/60"
-                  style={{ boxShadow: "0 0 60px -10px var(--accent)" }}
-                />
-              </div>
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 rounded-full bg-black/60 backdrop-blur px-3 py-1 text-xs">
-                把脸放入框内，正面对准镜头
+                <div className="h-3/4 w-3/5 rounded-[50%] border border-white/40" />
               </div>
             </div>
-            <div className="mt-4 flex justify-center gap-3">
+            <div className="mt-6 flex justify-center gap-6 text-sm">
               <button
                 onClick={() => {
                   stopCamera();
                   setMode("choose");
                 }}
-                className="rounded-full border border-border px-5 py-2.5 text-sm"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 取消
               </button>
-              <button onClick={capture} className="rounded-full bg-accent px-6 py-2.5 font-medium text-accent-foreground">
+              <button onClick={capture} className="border-b border-foreground pb-1">
                 拍摄
               </button>
             </div>
@@ -180,52 +164,33 @@ function AnalyzePage() {
         )}
 
         {mode === "preview" && previewUrl && prepared && (
-          <div className="glass rounded-3xl p-6">
+          <div>
             <div className="overflow-hidden rounded-2xl">
-              <img src={previewUrl} alt="待分析照片" className="w-full" />
+              <img src={previewUrl} alt="" className="w-full" />
             </div>
-            <div className="mt-4 flex flex-wrap gap-2 justify-center text-xs text-muted-foreground">
-              {prepared.zones.map((z) => (
-                <span key={z.zone} className="rounded-full border border-border px-2.5 py-1">
-                  {z.label}
-                </span>
-              ))}
-            </div>
-            <div className="mt-5 flex justify-center gap-3">
+            <div className="mt-6 flex justify-center gap-6 text-sm">
               <button
                 onClick={() => {
                   setPrepared(null);
                   setPreviewUrl(null);
                   setMode("choose");
                 }}
-                className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                <RotateCcw className="h-4 w-4" /> 重新选择
+                重选
               </button>
-              <button onClick={submit} className="rounded-full bg-accent px-6 py-2.5 font-medium text-accent-foreground glow-accent">
-                开始 AI 分析
+              <button onClick={submit} className="border-b border-foreground pb-1">
+                分析
               </button>
             </div>
           </div>
         )}
 
         {mode === "loading" && (
-          <div className="glass rounded-3xl p-16 text-center">
-            <Loader2 className="mx-auto h-10 w-10 animate-spin text-accent" />
-            <div className="mt-6 font-display text-xl">{prepared ? "Gemini 2.5 Flash 多分区分析中…" : "人脸对齐与光照矫正中…"}</div>
-            <div className="mt-2 text-sm text-muted-foreground">{prepared ? "正在综合 T 区 / 鼻部 / 双颊 / 眼周 / 红色通道，约 6-12 秒" : "首次会加载人脸关键点模型，约 3-6 秒"}</div>
+          <div className="py-24 text-center">
+            <Loader2 className="mx-auto h-6 w-6 animate-spin" />
           </div>
         )}
-
-        <div className="mt-10 rounded-2xl border border-border bg-surface/40 p-6 text-sm text-muted-foreground">
-          <div className="font-semibold text-foreground mb-2">拍摄小贴士</div>
-          <ul className="space-y-1.5 list-disc pl-5">
-            <li>使用自然光（如靠窗），避免阴影与逆光</li>
-            <li>素颜、无滤镜、不戴眼镜与口罩</li>
-            <li>脸部填满画面 70% 左右，正面对镜</li>
-            <li>所有照片仅用于本次分析，不会被上传保存</li>
-          </ul>
-        </div>
       </main>
     </div>
   );
