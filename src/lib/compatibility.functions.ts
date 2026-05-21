@@ -107,6 +107,34 @@ const TOOL_SCHEMA = {
           required: ["irritation", "allergy", "comedogenic", "dryness", "photo", "oiliness"],
           additionalProperties: false,
         },
+        skinAgeImpact: {
+          type: "object",
+          description: "持续使用 12 个月后皮肤生物学年龄变化估算",
+          properties: {
+            years: { type: "number", description: "带符号年数，正=加速衰老，负=有改善，范围 -2.0 ~ +5.0" },
+            direction: { type: "string", enum: ["aging", "neutral", "rejuvenating"] },
+            horizon: { type: "string", enum: ["12_months"] },
+            confidence: { type: "string", enum: ["低", "中", "高"] },
+            drivers: {
+              type: "array",
+              minItems: 1,
+              maxItems: 4,
+              items: {
+                type: "object",
+                properties: {
+                  factor: { type: "string", description: "成分或成分组合名" },
+                  mechanism: { type: "string", description: "简短再生生物学机制" },
+                  contributionYears: { type: "number" },
+                },
+                required: ["factor", "mechanism", "contributionYears"],
+                additionalProperties: false,
+              },
+            },
+            caveat: { type: "string" },
+          },
+          required: ["years", "direction", "horizon", "confidence", "drivers", "caveat"],
+          additionalProperties: false,
+        },
       },
       required: [
         "product",
@@ -118,6 +146,7 @@ const TOOL_SCHEMA = {
         "benefits",
         "usageTips",
         "riskRadar",
+        "skinAgeImpact",
       ],
       additionalProperties: false,
     },
