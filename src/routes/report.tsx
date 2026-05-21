@@ -275,9 +275,15 @@ function ReportPage() {
                 >
                   {report.verdict === "推荐" && <CheckCircle2 className="h-4 w-4" />}
                   {report.verdict !== "推荐" && <AlertTriangle className="h-4 w-4" />}
-                  {VERDICT_MAP[report.verdict]?.label ?? report.verdict}
+                  {report.verdict === "谨慎"
+                    ? `可能有 ${report.risks.length} 个风险`
+                    : (VERDICT_MAP[report.verdict]?.label ?? report.verdict)}
                 </div>
-                {VERDICT_MAP[report.verdict]?.sub && (
+                {report.verdict === "谨慎" ? (
+                  <span className="text-xs text-muted-foreground">
+                    （{Math.round(100 - report.compatibilityScore)}% 概率）
+                  </span>
+                ) : VERDICT_MAP[report.verdict]?.sub && (
                   <span className="text-xs text-muted-foreground">
                     {VERDICT_MAP[report.verdict].sub}
                   </span>
