@@ -444,7 +444,7 @@ function ReportPage() {
               <img
                 src={faceMeshImg}
                 alt="面部分区示意"
-                className="w-full h-auto block opacity-90 mix-blend-luminosity"
+                className="w-full h-auto block opacity-95 grayscale"
                 draggable={false}
               />
               {/* Hotspot overlay — irregular blurred blobs via SVG */}
