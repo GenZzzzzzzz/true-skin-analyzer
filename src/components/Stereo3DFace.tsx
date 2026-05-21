@@ -89,43 +89,75 @@ export function Stereo3DFace({ children }: { children: ReactNode }) {
       ref={outerRef}
       className="relative rounded-2xl overflow-hidden border border-white/10"
       style={{
-        perspective: "1200px",
+        perspective: "1400px",
         background:
-          "radial-gradient(120% 80% at 50% 30%, oklch(0.22 0.02 240 / 0.7), oklch(0.08 0.01 240 / 0.95))",
+          "radial-gradient(120% 80% at 50% 30%, oklch(0.22 0.04 240 / 0.85), oklch(0.06 0.02 250 / 0.98))",
         boxShadow:
-          "inset 0 1px 0 0 rgba(255,255,255,0.08), 0 30px 60px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)",
+          "inset 0 1px 0 0 rgba(255,255,255,0.1), inset 0 -40px 80px -20px rgba(0,0,0,0.6), 0 40px 80px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05)",
       }}
     >
       <div
         ref={innerRef}
         className="relative will-change-transform"
         style={{
-          transform:
-            "rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))",
+          transform: "rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))",
           transformStyle: "preserve-3d",
-          transition: "transform 0.25s cubic-bezier(0.2,0.8,0.2,1)",
+          transition: "transform 0.3s cubic-bezier(0.2,0.8,0.2,1)",
         }}
       >
         {children}
-        {/* Cursor-tracking highlight (top layer, non-interactive) */}
+        {/* 1. Subsurface scatter — wide warm glow follows cursor */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
-            transform: "translateZ(70px)",
+            transform: "translateZ(55px)",
             background:
-              "radial-gradient(circle at var(--mx,50%) var(--my,30%), rgba(255,255,255,0.14), transparent 45%)",
+              "radial-gradient(circle at var(--mx,50%) var(--my,30%), oklch(0.78 0.1 30 / 0.18), transparent 55%)",
             mixBlendMode: "screen",
           }}
         />
-        {/* Vignette */}
+        {/* 2. Specular highlight — small bright spot, sharper */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            transform: "translateZ(72px)",
+            background:
+              "radial-gradient(circle at var(--mx,50%) var(--my,30%), rgba(255,255,255,0.22), transparent 18%)",
+            mixBlendMode: "screen",
+          }}
+        />
+        {/* 3. Side-light gradient — shifts with tilt for directional lighting */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            transform: "translateZ(50px)",
+            background:
+              "linear-gradient(105deg, rgba(255,255,255,0.05) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.18) 100%)",
+            mixBlendMode: "overlay",
+            opacity: 0.7,
+          }}
+        />
+        {/* 4. AO vignette — pulls face into the stage */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             transform: "translateZ(65px)",
             background:
-              "radial-gradient(120% 90% at 50% 50%, transparent 55%, rgba(0,0,0,0.45) 100%)",
+              "radial-gradient(130% 95% at 50% 50%, transparent 45%, rgba(0,0,0,0.55) 100%)",
+          }}
+        />
+        {/* 5. Top-edge soft sheen */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-1/3"
+          style={{
+            transform: "translateZ(68px)",
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.07), transparent)",
           }}
         />
       </div>
