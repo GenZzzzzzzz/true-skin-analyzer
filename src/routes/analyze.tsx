@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
 import { Camera, Upload, AlertTriangle, Loader2, RotateCcw } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
-import { preprocessImage } from "@/lib/image-preprocess";
+import { preprocessImage, type PreprocessResult } from "@/lib/image-preprocess";
 import { analyzeSkin } from "@/lib/skin.functions";
 
 export const Route = createFileRoute("/analyze")({
@@ -25,7 +25,7 @@ function AnalyzePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mode, setMode] = useState<Mode>("choose");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewBase64, setPreviewBase64] = useState<string | null>(null);
+  const [prepared, setPrepared] = useState<PreprocessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -56,32 +56,42 @@ function AnalyzePage() {
     }
   }
 
-  async function capture() {
-    if (!videoRef.current) return;
-    const b64 = await preprocessImage(videoRef.current);
-    setPreviewBase64(b64);
-    setPreviewUrl(`data:image/jpeg;base64,${b64}`);
-    stopCamera();
-    setMode("preview");
-  }
-
-  async function onFile(file: File) {
+  async function runPreprocess(src: Blob | HTMLVideoElement) {
+    setMode("loading");
     setError(null);
     try {
-      const b64 = await preprocessImage(file);
-      setPreviewBase64(b64);
-      setPreviewUrl(`data:image/jpeg;base64,${b64}`);
+      const result = await preprocessImage(src);
+      setPrepared(result);
+      setPreviewUrl(result.previewDataUrl);
+      if (!result.faceDetected) {
+        setError("未检测到清晰人脸，建议重新拍摄以提升精度");
+      }
       setMode("preview");
-    } catch {
+    } catch (e) {
+      console.error(e);
       setError("图片处理失败，请换一张");
+      setMode("choose");
     }
   }
 
+  async function capture() {
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    await runPreprocess(video);
+    stopCamera();
+  }
+
+  async function onFile(file: File) {
+    await runPreprocess(file);
+  }
+
   async function submit() {
-    if (!previewBase64) return;
+    if (!prepared) return;
     setMode("loading");
     setError(null);
-    const result = await analyze({ data: { imageBase64: previewBase64 } });
+    const result = await analyze({
+      data: { zones: prepared.zones, faceDetected: prepared.faceDetected },
+    });
     if (!result.report) {
       setError(result.error || "分析失败");
       setMode("preview");
