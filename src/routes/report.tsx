@@ -404,7 +404,7 @@ function ReportPage() {
                 style={{
                   transform: "translateZ(28px)",
                   mixBlendMode: "multiply",
-                  opacity: 0.95,
+                  opacity: 0.98,
                 }}
               >
                 <defs>
@@ -431,8 +431,8 @@ function ReportPage() {
                     if (v < 45) return null;
                     const isHot = v >= 70;
                     // 更饱和的红/黄,让颜色在 multiply 后依然明显可见
-                    const rgb = isHot ? "220,60,60" : "230,160,50";
-                    const alpha = 0.50 + (v / 100) * 0.30;
+                    const rgb = isHot ? "240,40,40" : "250,165,30";
+                    const alpha = 0.55 + (v / 100) * 0.30;
                     return (
                       <path
                         key={z.id}
@@ -452,7 +452,7 @@ function ReportPage() {
                 style={{
                   transform: "translateZ(32px)",
                   mixBlendMode: "soft-light",
-                  opacity: 0.85,
+                  opacity: 0.92,
                 }}
               >
                 <defs>
@@ -465,12 +465,12 @@ function ReportPage() {
                     const v = getZoneIntensity(z, report.riskRadar);
                     if (v < 60) return null;
                     const isHot = v >= 70;
-                    const rgb = isHot ? "255,120,100" : "255,200,100";
+                    const rgb = isHot ? "255,90,70" : "255,180,60";
                     return (
                       <path
                         key={`${z.id}-glow`}
                         d={z.path}
-                        fill={`rgba(${rgb},0.65)`}
+                        fill={`rgba(${rgb},0.72)`}
                         className={isHot ? "animate-pulse" : ""}
                       />
                     );
