@@ -93,7 +93,7 @@ export function RotatingFaceHero() {
       <div
         className="relative"
         style={{
-          width: "min(420px, 70vw)",
+          width: "min(320px, 60vw)",
           aspectRatio: "632 / 848",
         }}
       >
