@@ -417,23 +417,29 @@ function ReportPage() {
               <img
                 src={faceMeshImg}
                 alt="面部分区示意"
-                className="w-full h-auto block opacity-95 grayscale relative"
+                className="w-full h-auto block relative"
                 draggable={false}
                 style={{ transform: "translateZ(20px)" }}
               />
               {/* Hotspot overlay — 基于面部分割的精细轮廓 */}
               <svg
-                className="absolute inset-0 w-full h-full pointer-events-none mix-blend-multiply"
+                className="absolute inset-0 w-full h-full pointer-events-none"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
                 style={{
                   transform: "translateZ(35px)",
-                  filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.45))",
+                  mixBlendMode: "screen",
+                  filter: "drop-shadow(0 0 6px rgba(0,0,0,0.5))",
                 }}
               >
                 <defs>
                   <filter id="blob-blur" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="0.35" />
+                    <feGaussianBlur stdDeviation="0.4" />
+                  </filter>
+                  {/* Inner-glow filter: makes color blocks look like they're radiating from under the skin */}
+                  <filter id="inner-glow" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="atop" />
                   </filter>
                   <clipPath id="face-skin" clipPathUnits="userSpaceOnUse">
                     <polygon points="
@@ -453,23 +459,30 @@ function ReportPage() {
                     const v = getZoneIntensity(z, report.riskRadar);
                     if (v < 45) return null;
                     const isHot = v >= 70;
-                    const rgb = isHot ? "239,68,68" : "251,191,36";
-                    const fillAlpha = 0.38 + (v / 100) * 0.22;
-                    const strokeAlpha = isHot ? 0.75 : 0.6;
+                    const rgb = isHot ? "248,113,113" : "251,191,36";
+                    const fillAlpha = 0.55 + (v / 100) * 0.25;
+                    const strokeAlpha = isHot ? 0.9 : 0.75;
                     return (
                       <g key={z.id} className={isHot ? "animate-pulse" : ""}>
-                        {/* 填充层 —— 轻微模糊使边缘更自然 */}
+                        {/* 外发光晕 —— 模拟皮下渗透 */}
+                        <path
+                          d={z.path}
+                          fill={`rgba(${rgb},${fillAlpha * 0.45})`}
+                          filter="url(#blob-blur)"
+                          style={{ filter: "blur(1.2px)" }}
+                        />
+                        {/* 填充层 + 内发光 */}
                         <path
                           d={z.path}
                           fill={`rgba(${rgb},${fillAlpha})`}
-                          filter="url(#blob-blur)"
+                          filter="url(#inner-glow)"
                         />
                         {/* 描边层 —— 勾勒分割轮廓 */}
                         <path
                           d={z.path}
                           fill="none"
                           stroke={`rgba(${rgb},${strokeAlpha})`}
-                          strokeWidth={0.4}
+                          strokeWidth={0.5}
                           strokeLinejoin="round"
                           vectorEffect="non-scaling-stroke"
                         />
