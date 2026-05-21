@@ -107,10 +107,12 @@ const PRODUCTS: Product[] = [
  */
 export function RotatingFaceHero() {
   // Anchor `active` to wall-clock elapsed time so it stays perfectly in
-  // sync with the CSS keyframe animation (setInterval drifts under load /
-  // when the tab is backgrounded, which desynced the face from the
-  // centered film frame).
+  // sync with the CSS keyframe animation. Each cell holds for HOLD_RATIO of
+  // its duration, then slides to the next frame. We advance `active` at the
+  // start of the slide so the highlight follows the frame moving INTO the
+  // center, not the one leaving it.
   const PER_FRAME_MS = 3500;
+  const HOLD_RATIO = 0.78;
   const [active, setActive] = useState(0);
 
   useEffect(() => {
@@ -118,13 +120,19 @@ export function RotatingFaceHero() {
     let raf = 0;
     const loop = () => {
       const elapsed = performance.now() - start;
-      const idx = Math.floor(elapsed / PER_FRAME_MS) % PRODUCTS.length;
+      const cellIdx = Math.floor(elapsed / PER_FRAME_MS) % PRODUCTS.length;
+      const cellElapsed = elapsed % PER_FRAME_MS;
+      const inSlide = cellElapsed >= PER_FRAME_MS * HOLD_RATIO;
+      const idx = inSlide
+        ? (cellIdx + 1) % PRODUCTS.length
+        : cellIdx;
       setActive((prev) => (prev === idx ? prev : idx));
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, []);
+
 
   const product = PRODUCTS[active];
 
