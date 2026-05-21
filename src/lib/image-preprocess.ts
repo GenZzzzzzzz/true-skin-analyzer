@@ -37,10 +37,16 @@ export async function preprocessImage(
     console.warn("face landmarker failed, falling back", e);
   }
 
-  // 2. Aligned full-face canvas
-  const aligned = landmarks
-    ? alignFace(sourceCanvas, landmarks, FULL_MAX)
-    : centerSquare(sourceCanvas, FULL_MAX);
+  // 2. Aligned full-face canvas (+ transform so we can map landmarks without re-detect)
+  let aligned: HTMLCanvasElement;
+  let alignT: AlignTransform | null = null;
+  if (landmarks) {
+    const r = alignFace(sourceCanvas, landmarks, FULL_MAX);
+    aligned = r.canvas;
+    alignT = r.t;
+  } else {
+    aligned = centerSquare(sourceCanvas, FULL_MAX);
+  }
 
   // 3. Illumination correction (single-scale retinex)
   retinexInPlace(aligned);
@@ -52,19 +58,12 @@ export async function preprocessImage(
     { zone: "full", label: "对齐+光照矫正后的全脸", base64: fullBase64 },
   ];
 
-  if (landmarks) {
-    // Map landmarks into aligned canvas coordinates? Simpler: re-detect on aligned.
-    let alignedLmks: NormalizedPoint[] | null = null;
-    try {
-      const lm = await getFaceLandmarker();
-      const res = lm.detect(aligned);
-      alignedLmks = res.faceLandmarks?.[0] ?? null;
-    } catch {}
-
-    const lmks = alignedLmks ?? landmarks;
+  if (landmarks && alignT) {
     const W = aligned.width;
     const H = aligned.height;
-    const px = (i: number) => ({ x: lmks[i].x * W, y: lmks[i].y * H });
+    // Map source landmarks → aligned-canvas pixels (avoids a 2nd MediaPipe pass).
+    const px = (i: number) => mapLandmark(landmarks![i], alignT!);
+    void W; void H;
 
     // T-zone: forehead top → nose bottom, width ~ nose width * 3
     const fh = px(LMK.forehead);
