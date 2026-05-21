@@ -18,9 +18,9 @@ export interface PreprocessResult {
   previewDataUrl: string; // aligned full-face preview for UI
 }
 
-const FULL_MAX = 1600; // high-res to preserve pores / fine lines
-const ZONE_MAX = 1024;
-const JPEG_Q = 0.95;
+const FULL_MAX = 1280; // 足够保留毛孔/细纹，传输和模型解码都更快
+const ZONE_MAX = 768;
+const JPEG_Q = 0.9;
 
 export async function preprocessImage(
   source: Blob | HTMLVideoElement,
