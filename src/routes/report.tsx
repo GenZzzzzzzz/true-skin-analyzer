@@ -35,12 +35,12 @@ const FACE_ZONES: FaceZone[] = [
   {
     id: "forehead",
     label: "额头 · T 区",
-    labelX: 22, labelY: 11,
+    labelX: 27, labelY: 20,
     blobs: [
-      { cx: 22, cy: 17, rx: 18, ry: 7, rot: -4 },
-      { cx: 15, cy: 18, rx: 8, ry: 6 },
-      { cx: 29, cy: 18, rx: 8, ry: 6 },
-      { cx: 22, cy: 22, rx: 10, ry: 4 },
+      { cx: 27, cy: 28, rx: 13, ry: 4.5 },
+      { cx: 22, cy: 29, rx: 6, ry: 4 },
+      { cx: 32, cy: 29, rx: 6, ry: 4 },
+      { cx: 27, cy: 32, rx: 8, ry: 3 },
     ],
     drivers: ["oiliness", "comedogenic"],
     hint: "出油 / 闭口高发区",
@@ -48,12 +48,11 @@ const FACE_ZONES: FaceZone[] = [
   {
     id: "nose",
     label: "鼻翼 · 黑头区",
-    labelX: 22, labelY: 41,
+    labelX: 27, labelY: 53,
     blobs: [
-      { cx: 22, cy: 48, rx: 5, ry: 9 },
-      { cx: 18, cy: 50, rx: 4, ry: 4 },
-      { cx: 26, cy: 50, rx: 4, ry: 4 },
-      { cx: 22, cy: 54, rx: 6, ry: 3 },
+      { cx: 27, cy: 60, rx: 4, ry: 7 },
+      { cx: 24, cy: 64, rx: 3.5, ry: 3 },
+      { cx: 30, cy: 64, rx: 3.5, ry: 3 },
     ],
     drivers: ["oiliness", "comedogenic", "irritation"],
     hint: "黑头、毛孔粗大",
@@ -61,10 +60,10 @@ const FACE_ZONES: FaceZone[] = [
   {
     id: "eye",
     label: "眼周",
-    labelX: 29, labelY: 25,
+    labelX: 38, labelY: 43,
     blobs: [
-      { cx: 14, cy: 32, rx: 7, ry: 3.5, rot: -8 },
-      { cx: 30, cy: 32, rx: 7, ry: 3.5, rot: 8 },
+      { cx: 21, cy: 47, rx: 5, ry: 2.8, rot: -6 },
+      { cx: 33, cy: 47, rx: 5, ry: 2.8, rot: 6 },
     ],
     drivers: ["allergy", "irritation", "dryness"],
     hint: "皮肤最薄，易刺痛 / 过敏",
@@ -72,11 +71,11 @@ const FACE_ZONES: FaceZone[] = [
   {
     id: "left-cheek",
     label: "左颊",
-    labelX: 11, labelY: 44,
+    labelX: 14, labelY: 56,
     blobs: [
-      { cx: 11, cy: 53, rx: 9, ry: 11, rot: -12 },
-      { cx: 8, cy: 50, rx: 5, ry: 6 },
-      { cx: 14, cy: 60, rx: 6, ry: 5 },
+      { cx: 17, cy: 63, rx: 6, ry: 8, rot: -10 },
+      { cx: 14, cy: 60, rx: 4, ry: 5 },
+      { cx: 19, cy: 70, rx: 4.5, ry: 4 },
     ],
     drivers: ["dryness", "irritation", "photo"],
     hint: "干燥 / 泛红 / 晒伤区",
@@ -84,11 +83,11 @@ const FACE_ZONES: FaceZone[] = [
   {
     id: "right-cheek",
     label: "右颊",
-    labelX: 33, labelY: 44,
+    labelX: 41, labelY: 56,
     blobs: [
-      { cx: 33, cy: 53, rx: 9, ry: 11, rot: 12 },
-      { cx: 36, cy: 50, rx: 5, ry: 6 },
-      { cx: 30, cy: 60, rx: 6, ry: 5 },
+      { cx: 37, cy: 63, rx: 6, ry: 8, rot: 10 },
+      { cx: 40, cy: 60, rx: 4, ry: 5 },
+      { cx: 35, cy: 70, rx: 4.5, ry: 4 },
     ],
     drivers: ["dryness", "irritation", "photo"],
     hint: "干燥 / 泛红 / 晒伤区",
@@ -96,11 +95,11 @@ const FACE_ZONES: FaceZone[] = [
   {
     id: "chin",
     label: "下巴",
-    labelX: 22, labelY: 84,
+    labelX: 27, labelY: 94,
     blobs: [
-      { cx: 22, cy: 78, rx: 9, ry: 5 },
-      { cx: 18, cy: 76, rx: 5, ry: 4 },
-      { cx: 26, cy: 76, rx: 5, ry: 4 },
+      { cx: 27, cy: 87, rx: 7, ry: 4 },
+      { cx: 23, cy: 85, rx: 4, ry: 3 },
+      { cx: 31, cy: 85, rx: 4, ry: 3 },
     ],
     drivers: ["comedogenic", "oiliness"],
     hint: "周期性闷痘高发区",
@@ -108,11 +107,11 @@ const FACE_ZONES: FaceZone[] = [
   {
     id: "jaw-side",
     label: "下颌线",
-    labelX: 72, labelY: 68,
+    labelX: 78, labelY: 68,
     blobs: [
-      { cx: 72, cy: 75, rx: 12, ry: 5, rot: -10 },
-      { cx: 66, cy: 73, rx: 5, ry: 4 },
-      { cx: 78, cy: 77, rx: 5, ry: 4 },
+      { cx: 73, cy: 78, rx: 10, ry: 4, rot: -8 },
+      { cx: 67, cy: 76, rx: 4, ry: 3.5 },
+      { cx: 80, cy: 80, rx: 4, ry: 3.5 },
     ],
     drivers: ["comedogenic", "irritation"],
     hint: "闷痘 / 摩擦刺激",
@@ -120,15 +119,16 @@ const FACE_ZONES: FaceZone[] = [
   {
     id: "temple",
     label: "太阳穴",
-    labelX: 62, labelY: 22,
+    labelX: 66, labelY: 28,
     blobs: [
-      { cx: 62, cy: 29, rx: 7, ry: 8, rot: 15 },
-      { cx: 58, cy: 32, rx: 4, ry: 5 },
+      { cx: 68, cy: 36, rx: 6, ry: 7, rot: 12 },
+      { cx: 64, cy: 39, rx: 4, ry: 5 },
     ],
     drivers: ["photo", "dryness"],
     hint: "易晒伤 / 干纹",
   },
 ];
+
 
 function getZoneIntensity(zone: FaceZone, radar: RiskRadar): number {
   // 取该分区主要驱动维度的最大值作为强度
@@ -444,18 +444,18 @@ function ReportPage() {
               <img
                 src={faceMeshImg}
                 alt="面部分区示意"
-                className="w-full h-auto block opacity-90 mix-blend-luminosity"
+                className="w-full h-auto block opacity-95 grayscale"
                 draggable={false}
               />
               {/* Hotspot overlay — irregular blurred blobs via SVG */}
               <svg
-                className="absolute inset-0 w-full h-full pointer-events-none"
+                className="absolute inset-0 w-full h-full pointer-events-none mix-blend-multiply"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
               >
                 <defs>
                   <filter id="blob-blur" x="-30%" y="-30%" width="160%" height="160%">
-                    <feGaussianBlur stdDeviation="1.6" />
+                    <feGaussianBlur stdDeviation="0.9" />
                   </filter>
                 </defs>
                 {FACE_ZONES.map((z) => {
@@ -463,7 +463,7 @@ function ReportPage() {
                   if (v < 45) return null;
                   const isHot = v >= 70;
                   const rgb = isHot ? "239,68,68" : "251,191,36";
-                  const alpha = 0.4 + (v / 100) * 0.45;
+                  const alpha = 0.75 + (v / 100) * 0.2;
                   const scale = 1 + (v - 45) / 110; // 1.0 ~ 1.5
                   return (
                     <g
