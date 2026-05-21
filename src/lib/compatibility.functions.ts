@@ -179,6 +179,9 @@ export const analyzeCompatibility = createServerFn({ method: "POST" })
             ],
             tools: [TOOL_SCHEMA],
             tool_choice: { type: "function", function: { name: "submit_compatibility" } },
+            temperature: 0,
+            top_p: 0,
+            seed: 42,
           }),
         });
 
