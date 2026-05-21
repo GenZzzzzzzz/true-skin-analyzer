@@ -456,7 +456,7 @@ function ReportPage() {
                           d={z.path}
                           fill="none"
                           stroke={`rgba(${rgb},${strokeAlpha})`}
-                          strokeWidth={0.5}
+                          strokeWidth={isHot ? 0.75 : 0.6}
                           strokeLinejoin="round"
                           vectorEffect="non-scaling-stroke"
                         />
