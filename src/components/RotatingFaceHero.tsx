@@ -191,32 +191,14 @@ function FilmStrip({
   const STEP = FRAME_H + GAP;
   const VISIBLE = 3;
   const N = products.length;
-  const center = ((VISIBLE - 1) / 2) * STEP;
-
-  // Local position state so we can snap back without animation after one
-  // full loop, producing an endless downward slide.
-  const [pos, setPos] = useState(tick);
-  const [animate, setAnimate] = useState(true);
-
-  useEffect(() => {
-    setAnimate(true);
-    setPos(tick);
-  }, [tick]);
-
-  const handleTransitionEnd = () => {
-    if (pos >= N) {
-      setAnimate(false);
-      setPos((p) => p - N);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setAnimate(true));
-      });
-    }
-  };
+  // Per-frame duration must match the parent tick interval (2600ms) so that
+  // the highlighted product visually aligns with the centered frame.
+  const PER_FRAME_MS = 2600;
+  const totalMs = N * PER_FRAME_MS;
 
   const active = ((tick % N) + N) % N;
-  const offset = -(pos * STEP) + center;
-  // Duplicate so we always have frames to scroll into.
-  const rendered = [...products, ...products];
+  // Triple the strip so the CSS loop never reveals a gap.
+  const rendered = [...products, ...products, ...products];
 
   return (
     <div
@@ -226,6 +208,13 @@ function FilmStrip({
         height: VISIBLE * FRAME_H + (VISIBLE - 1) * GAP,
       }}
     >
+      <style>{`
+        @keyframes filmstrip-scroll {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(-${N * STEP}px); }
+        }
+      `}</style>
+
       <div
         aria-hidden
         className="absolute inset-0 rounded-[6px]"
@@ -255,14 +244,16 @@ function FilmStrip({
         }}
       />
 
-      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 overflow-hidden" style={{ width: 80 }}>
+      <div
+        className="absolute inset-y-0 left-1/2 -translate-x-1/2 overflow-hidden"
+        style={{ width: 80 }}
+      >
         <div
           className="absolute left-0 right-0"
-          onTransitionEnd={handleTransitionEnd}
           style={{
-            transform: `translateY(${offset}px)`,
-            transition: animate ? "transform 700ms ease" : "none",
-            top: 0,
+            top: ((VISIBLE - 1) / 2) * STEP - STEP * N,
+            animation: `filmstrip-scroll ${totalMs}ms linear infinite`,
+            willChange: "transform",
           }}
         >
           {rendered.map((p, i) => {
@@ -279,7 +270,7 @@ function FilmStrip({
                 }}
               >
                 <div
-                  className="relative h-full w-full overflow-hidden rounded-[2px] transition-all duration-500"
+                  className="relative h-full w-full overflow-hidden rounded-[2px] transition-opacity duration-500"
                   style={{
                     background: "#f6f4ef",
                     outline: isActive
