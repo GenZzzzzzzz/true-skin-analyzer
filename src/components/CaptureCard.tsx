@@ -101,7 +101,7 @@ export function CaptureCard({
 
   return (
     <>
-      <div className="stereo-card no-lift group relative overflow-hidden rounded-[2rem] aspect-[3/4]">
+      <div className="stereo-card no-lift group relative overflow-hidden rounded-[2rem] aspect-[4/6]">
         {/* Top accent label */}
         <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 rounded-full border border-white/15 bg-black/40 backdrop-blur px-3 py-1 text-[10px] uppercase tracking-widest text-white/80">
           <span
