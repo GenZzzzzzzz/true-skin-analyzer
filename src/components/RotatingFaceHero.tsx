@@ -27,7 +27,7 @@ const PRODUCTS: Product[] = [
     name: "Hyaluronic Serum",
     // Forehead T-zone (yellow) + nose bridge (red)
     zones: [
-      { top: "8%", left: "16%", width: "68%", height: "22%", tone: "yellow" },
+      { top: "4%", left: "12%", width: "76%", height: "28%", tone: "yellow" },
       { top: "52%", left: "42%", width: "16%", height: "12%", tone: "red" },
     ],
   },
