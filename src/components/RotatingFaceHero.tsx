@@ -1,144 +1,253 @@
+import { useEffect, useState } from "react";
 import faceMeshImg from "@/assets/face-mesh-v2.png";
+import c1 from "@/assets/cosmetic-1.png";
+import c2 from "@/assets/cosmetic-2.png";
+import c3 from "@/assets/cosmetic-3.png";
+import c4 from "@/assets/cosmetic-4.png";
+import c5 from "@/assets/cosmetic-5.png";
+
+type Zone = {
+  // percent coordinates on the face image box
+  top: string;
+  left: string;
+  width: string;
+  height: string;
+  tone: "red" | "yellow";
+};
+
+type Product = {
+  src: string;
+  name: string;
+  zones: Zone[];
+};
+
+const PRODUCTS: Product[] = [
+  {
+    src: c1,
+    name: "Hyaluronic Serum",
+    zones: [
+      { top: "32%", left: "32%", width: "16%", height: "10%", tone: "yellow" },
+      { top: "58%", left: "44%", width: "14%", height: "9%", tone: "red" },
+    ],
+  },
+  {
+    src: c2,
+    name: "Protective Day Cream",
+    zones: [
+      { top: "18%", left: "38%", width: "22%", height: "12%", tone: "yellow" },
+      { top: "46%", left: "26%", width: "12%", height: "9%", tone: "yellow" },
+    ],
+  },
+  {
+    src: c3,
+    name: "Radiant Fluid Foundation",
+    zones: [
+      { top: "40%", left: "28%", width: "14%", height: "10%", tone: "red" },
+      { top: "40%", left: "56%", width: "14%", height: "10%", tone: "red" },
+      { top: "62%", left: "42%", width: "16%", height: "9%", tone: "yellow" },
+    ],
+  },
+  {
+    src: c4,
+    name: "Couture Lipstick",
+    zones: [
+      { top: "68%", left: "40%", width: "20%", height: "8%", tone: "red" },
+    ],
+  },
+  {
+    src: c5,
+    name: "Face Cream",
+    zones: [
+      { top: "22%", left: "32%", width: "30%", height: "10%", tone: "yellow" },
+      { top: "70%", left: "36%", width: "24%", height: "9%", tone: "yellow" },
+    ],
+  },
+];
 
 /**
- * Premium rotating 3D face hero.
- * - Continuous Y-axis rotation conveys "scanning / analyzing"
- * - Layered glow rings, orbital ticks, and ambient lighting for high-end feel
- * - Pure CSS animation, GPU-accelerated, respects prefers-reduced-motion
+ * High-end hero:
+ *  - 3D face (background-less, larger, no rotation) on the left
+ *  - Vertical film strip on the right that slides cosmetic photos one-by-one
+ *  - Selected cosmetic illuminates corresponding red/yellow risk zones on the face
  */
 export function RotatingFaceHero() {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setActive((i) => (i + 1) % PRODUCTS.length);
+    }, 2600);
+    return () => clearInterval(t);
+  }, []);
+
+  const product = PRODUCTS[active];
+
   return (
-    <div
-      className="relative mx-auto"
-      style={{
-        width: "min(420px, 80vw)",
-        aspectRatio: "1 / 1",
-        perspective: "1600px",
-      }}
-    >
-      {/* Ambient backdrop glow */}
+    <div className="relative mx-auto flex items-center justify-center gap-6 sm:gap-10">
+      {/* Face stage — larger, no background, blends into page */}
       <div
-        aria-hidden
-        className="absolute inset-0 -z-10 rounded-full blur-3xl opacity-70"
+        className="relative"
         style={{
-          background:
-            "radial-gradient(circle at 50% 45%, oklch(0.78 0.15 195 / 0.45), oklch(0.7 0.22 320 / 0.25) 45%, transparent 70%)",
+          width: "min(520px, 78vw)",
+          aspectRatio: "1 / 1",
         }}
-      />
-
-      {/* Outer orbital ring — counter-rotates */}
-      <div
-        aria-hidden
-        className="absolute inset-0 rounded-full border border-white/10 face-orbit-rev"
-        style={{
-          background:
-            "conic-gradient(from 0deg, transparent 0deg, oklch(0.78 0.15 195 / 0.35) 30deg, transparent 60deg, transparent 180deg, oklch(0.7 0.22 320 / 0.3) 210deg, transparent 240deg)",
-          mask: "radial-gradient(circle, transparent 47%, black 48%, black 50%, transparent 51%)",
-          WebkitMask:
-            "radial-gradient(circle, transparent 47%, black 48%, black 50%, transparent 51%)",
-        }}
-      />
-
-      {/* Inner tick ring */}
-      <div
-        aria-hidden
-        className="absolute inset-[6%] rounded-full border border-white/5 face-orbit"
-        style={{
-          background:
-            "repeating-conic-gradient(from 0deg, oklch(0.85 0.05 220 / 0.25) 0deg 0.6deg, transparent 0.6deg 6deg)",
-          mask: "radial-gradient(circle, transparent 46%, black 47%, black 49%, transparent 50%)",
-          WebkitMask:
-            "radial-gradient(circle, transparent 46%, black 47%, black 49%, transparent 50%)",
-        }}
-      />
-
-      {/* Rotating 3D face stage */}
-      <div className="absolute inset-[10%] face-spin-stage">
-        {/* Bottom shadow disc — sits on the "floor" */}
-        <div
-          aria-hidden
-          className="absolute left-1/2 bottom-[-6%] -translate-x-1/2 rounded-[50%] blur-2xl opacity-60"
+      >
+        <img
+          src={faceMeshImg}
+          alt="3D face analysis"
+          draggable={false}
+          className="absolute inset-0 m-auto h-full w-full object-contain select-none"
           style={{
-            width: "80%",
-            height: "14%",
-            background: "radial-gradient(ellipse, rgba(0,0,0,0.6), transparent 70%)",
+            filter:
+              "drop-shadow(0 30px 60px rgba(0,0,0,0.55)) drop-shadow(0 0 40px oklch(0.78 0.15 195 / 0.25))",
           }}
         />
 
-        {/* Left-half face with overlays */}
-        <div className="absolute inset-0" style={{ clipPath: "inset(0 50% 0 0)" }}>
-          <img
-            src={faceMeshImg}
-            alt=""
-            draggable={false}
-            className="absolute inset-0 m-auto h-full w-full object-contain select-none"
-            style={{
-              filter:
-                "drop-shadow(0 20px 40px rgba(0,0,0,0.55)) drop-shadow(0 0 30px oklch(0.78 0.15 195 / 0.35))",
-            }}
-          />
-
-          {/* Front rim light */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(60% 80% at 30% 30%, rgba(255,255,255,0.18), transparent 55%)",
-              mixBlendMode: "screen",
-            }}
-          />
-
-          {/* Scan line sweep */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
-          >
+        {/* Risk zones overlay — fades when product changes */}
+        <div key={active} className="absolute inset-0 zone-fade-in">
+          {product.zones.map((z, i) => (
             <div
-              className="absolute inset-x-0 h-[14%] face-scan"
+              key={i}
+              className="absolute rounded-full"
               style={{
+                top: z.top,
+                left: z.left,
+                width: z.width,
+                height: z.height,
                 background:
-                  "linear-gradient(180deg, transparent, oklch(0.85 0.18 195 / 0.45), transparent)",
-                filter: "blur(2px)",
+                  z.tone === "red"
+                    ? "radial-gradient(ellipse, oklch(0.7 0.25 25 / 0.78), oklch(0.7 0.25 25 / 0) 70%)"
+                    : "radial-gradient(ellipse, oklch(0.85 0.18 85 / 0.78), oklch(0.85 0.18 85 / 0) 70%)",
+                filter: "blur(6px)",
+                mixBlendMode: "screen",
               }}
             />
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Floating data chips */}
-      <FloatChip className="left-[-2%] top-[18%]" label="刺激" value="低" tone="ok" delay="0s" />
-      <FloatChip className="right-[-4%] top-[34%]" label="闷痘" value="留意" tone="warn" delay="1.2s" />
-      <FloatChip className="left-[2%] bottom-[18%]" label="过敏" value="低" tone="ok" delay="2.1s" />
-      <FloatChip className="right-[-2%] bottom-[8%]" label="光敏" value="中" tone="warn" delay="0.6s" />
+      {/* Vertical film strip */}
+      <FilmStrip products={PRODUCTS} active={active} onSelect={setActive} />
     </div>
   );
 }
 
-function FloatChip({
-  className,
-  label,
-  value,
-  tone,
-  delay,
+function FilmStrip({
+  products,
+  active,
+  onSelect,
 }: {
-  className?: string;
-  label: string;
-  value: string;
-  tone: "ok" | "warn";
-  delay: string;
+  products: Product[];
+  active: number;
+  onSelect: (i: number) => void;
 }) {
-  const color =
-    tone === "ok"
-      ? "border-emerald-300/30 bg-emerald-400/10 text-emerald-200"
-      : "border-amber-300/30 bg-amber-400/10 text-amber-200";
+  // Frame height + gap (matches CSS below)
+  const FRAME_H = 110;
+  const GAP = 10;
+  const STEP = FRAME_H + GAP;
+  const VISIBLE = 3;
+  // Center the active frame
+  const offset = -(active * STEP) + ((VISIBLE - 1) / 2) * STEP;
+
   return (
     <div
-      className={`absolute hidden sm:flex items-center gap-2 rounded-full border ${color} backdrop-blur-md px-3 py-1.5 text-[11px] font-medium shadow-lg face-float ${className ?? ""}`}
-      style={{ animationDelay: delay }}
+      className="relative hidden sm:block"
+      style={{
+        width: 132,
+        height: VISIBLE * FRAME_H + (VISIBLE - 1) * GAP,
+      }}
     >
-      <span className="opacity-70">{label}</span>
-      <span className="font-semibold">{value}</span>
+      {/* Film body — black strip with perforations on both sides */}
+      <div
+        aria-hidden
+        className="absolute inset-0 rounded-[6px]"
+        style={{
+          background: "#0a0a0a",
+          boxShadow:
+            "0 30px 60px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.04)",
+        }}
+      />
+      {/* Perforations */}
+      <Perforations side="left" />
+      <Perforations side="right" />
+
+      {/* Top & bottom fade for cinematic feel */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-10 z-20"
+        style={{
+          background:
+            "linear-gradient(to bottom, var(--background), transparent)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-10 z-20"
+        style={{
+          background:
+            "linear-gradient(to top, var(--background), transparent)",
+        }}
+      />
+
+      {/* Frames track */}
+      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 overflow-hidden" style={{ width: 96 }}>
+        <div
+          className="absolute left-0 right-0 transition-transform duration-700"
+          style={{
+            transform: `translateY(${offset}px)`,
+            top: 0,
+          }}
+        >
+          {products.map((p, i) => (
+            <button
+              key={i}
+              onClick={() => onSelect(i)}
+              className="block w-full"
+              style={{
+                height: FRAME_H,
+                marginBottom: GAP,
+              }}
+            >
+              <div
+                className="relative h-full w-full overflow-hidden rounded-[2px] transition-all duration-500"
+                style={{
+                  background: "#f6f4ef",
+                  outline:
+                    i === active
+                      ? "1px solid oklch(0.85 0.05 220 / 0.6)"
+                      : "1px solid rgba(255,255,255,0.04)",
+                  opacity: i === active ? 1 : 0.38,
+                  filter: i === active ? "none" : "grayscale(0.4)",
+                }}
+              >
+                <img
+                  src={p.src}
+                  alt={p.name}
+                  draggable={false}
+                  className="absolute inset-0 m-auto h-full w-full object-contain p-2 select-none"
+                />
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
+  );
+}
+
+function Perforations({ side }: { side: "left" | "right" }) {
+  return (
+    <div
+      aria-hidden
+      className="absolute top-0 bottom-0 z-10"
+      style={{
+        [side]: 0,
+        width: 14,
+        background:
+          "repeating-linear-gradient(to bottom, transparent 0 6px, #f6f4ef 6px 16px, transparent 16px 22px)",
+        WebkitMaskImage:
+          "linear-gradient(to right, black, black)",
+      }}
+    />
   );
 }
