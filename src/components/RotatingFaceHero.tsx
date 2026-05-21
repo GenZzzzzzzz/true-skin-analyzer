@@ -179,18 +179,44 @@ export function RotatingFaceHero() {
 
 function FilmStrip({
   products,
-  active,
+  tick,
   onSelect,
 }: {
   products: Product[];
-  active: number;
+  tick: number;
   onSelect: (i: number) => void;
 }) {
   const FRAME_H = 90;
   const GAP = 8;
   const STEP = FRAME_H + GAP;
   const VISIBLE = 3;
-  const offset = -(active * STEP) + ((VISIBLE - 1) / 2) * STEP;
+  const N = products.length;
+  const center = ((VISIBLE - 1) / 2) * STEP;
+
+  // Local position state so we can snap back without animation after one
+  // full loop, producing an endless downward slide.
+  const [pos, setPos] = useState(tick);
+  const [animate, setAnimate] = useState(true);
+
+  useEffect(() => {
+    setAnimate(true);
+    setPos(tick);
+  }, [tick]);
+
+  const handleTransitionEnd = () => {
+    if (pos >= N) {
+      setAnimate(false);
+      setPos((p) => p - N);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setAnimate(true));
+      });
+    }
+  };
+
+  const active = ((tick % N) + N) % N;
+  const offset = -(pos * STEP) + center;
+  // Duplicate so we always have frames to scroll into.
+  const rendered = [...products, ...products];
 
   return (
     <div
@@ -231,36 +257,40 @@ function FilmStrip({
 
       <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 overflow-hidden" style={{ width: 80 }}>
         <div
-          className="absolute left-0 right-0 transition-transform duration-700"
+          className="absolute left-0 right-0"
+          onTransitionEnd={handleTransitionEnd}
           style={{
             transform: `translateY(${offset}px)`,
+            transition: animate ? "transform 700ms ease" : "none",
             top: 0,
           }}
         >
-          {products.map((p, i) => (
-            <button
-              key={i}
-              onClick={() => onSelect(i)}
-              className="block w-full"
-              style={{
-                height: FRAME_H,
-                marginBottom: GAP,
-              }}
-            >
-              <div
-                className="relative h-full w-full overflow-hidden rounded-[2px] transition-all duration-500"
+          {rendered.map((p, i) => {
+            const productIndex = i % N;
+            const isActive = productIndex === active;
+            return (
+              <button
+                key={i}
+                onClick={() => onSelect(productIndex)}
+                className="block w-full"
                 style={{
-                  background: "#f6f4ef",
-                  outline:
-                    i === active
-                      ? "1px solid oklch(0.85 0.05 220 / 0.6)"
-                      : "1px solid rgba(255,255,255,0.04)",
-                  opacity: i === active ? 1 : 0.38,
-                  filter: i === active ? "none" : "grayscale(0.4)",
+                  height: FRAME_H,
+                  marginBottom: GAP,
                 }}
               >
-                <img
-                  src={p.src}
+                <div
+                  className="relative h-full w-full overflow-hidden rounded-[2px] transition-all duration-500"
+                  style={{
+                    background: "#f6f4ef",
+                    outline: isActive
+                      ? "1px solid oklch(0.85 0.05 220 / 0.6)"
+                      : "1px solid rgba(255,255,255,0.04)",
+                    opacity: isActive ? 1 : 0.38,
+                    filter: isActive ? "none" : "grayscale(0.4)",
+                  }}
+                >
+                  <img
+                    src={p.src}
                   alt={p.name}
                   draggable={false}
                   className="absolute inset-0 m-auto h-full w-full object-contain p-2 select-none"
