@@ -412,7 +412,8 @@ function ReportPage() {
 
         {/* Face hotspot map — minimal, no side breakdown */}
 
-        <div className="stereo-card rounded-3xl p-6 md:p-8 overflow-hidden lg:w-[380px]">
+        <div className="mt-6 stereo-card rounded-3xl p-6 md:p-8 overflow-hidden">
+
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <div className="text-xs uppercase tracking-widest text-muted-foreground">
