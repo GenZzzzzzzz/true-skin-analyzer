@@ -212,8 +212,8 @@ function AnalyzePage() {
         {mode === "loading" && (
           <div className="glass rounded-3xl p-16 text-center">
             <Loader2 className="mx-auto h-10 w-10 animate-spin text-accent" />
-            <div className="mt-6 font-display text-xl">AI 正在分析肤质…</div>
-            <div className="mt-2 text-sm text-muted-foreground">通常需要 5-15 秒</div>
+            <div className="mt-6 font-display text-xl">{prepared ? "Gemini 2.5 Pro 多分区分析中…" : "人脸对齐与光照矫正中…"}</div>
+            <div className="mt-2 text-sm text-muted-foreground">{prepared ? "正在综合 T 区 / 鼻部 / 双颊 / 眼周 / 红色通道，约 15-30 秒" : "首次会加载人脸关键点模型，约 5-10 秒"}</div>
           </div>
         )}
 
