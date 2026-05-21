@@ -172,7 +172,7 @@ export function RotatingFaceHero() {
         </svg>
       </div>
 
-      <FilmStrip products={PRODUCTS} active={active} onSelect={setActive} />
+      <FilmStrip products={PRODUCTS} tick={tick} onSelect={(i) => setTick(i)} />
     </div>
   );
 }
