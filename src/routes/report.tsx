@@ -449,7 +449,7 @@ function ReportPage() {
               />
               {/* Hotspot overlay — irregular blurred blobs via SVG */}
               <svg
-                className="absolute inset-0 w-full h-full pointer-events-none"
+                className="absolute inset-0 w-full h-full pointer-events-none mix-blend-multiply"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
               >
