@@ -15,6 +15,7 @@ import {
   type RiskRadar,
   type Severity,
   type Verdict,
+  type SkinAgeImpact,
 } from "@/lib/compatibility-types";
 import faceMeshImg from "@/assets/face-mesh-v2.png";
 import { Stereo3DFace } from "@/components/Stereo3DFace";
