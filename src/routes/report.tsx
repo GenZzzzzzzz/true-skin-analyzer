@@ -520,7 +520,7 @@ function ReportPage() {
             </Stereo3DFace>
           </div>
         </div>
-        </div>
+
 
         {/* Skin Age Impact — Regenerative Bio hero number */}
         {report.skinAgeImpact && <SkinAgeImpactCard impact={report.skinAgeImpact} />}
