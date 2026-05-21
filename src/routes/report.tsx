@@ -278,13 +278,6 @@ function ReportPage() {
   }
 
   const verdictStyle = VERDICT_STYLE[report.verdict] ?? VERDICT_STYLE["谨慎"];
-  const radarData = (Object.keys(RISK_RADAR_LABELS) as Array<keyof typeof RISK_RADAR_LABELS>).map(
-    (k) => ({
-      subject: RISK_RADAR_LABELS[k],
-      A: report.riskRadar[k] ?? 0,
-      fullMark: 100,
-    }),
-  );
 
   // Circular score ring math
   const R = 56;
