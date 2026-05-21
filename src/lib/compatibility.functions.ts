@@ -26,22 +26,49 @@ D. compatibilityScore = round( 100 - 0.35*irritation - 0.25*allergy - 0.20*comed
 E. verdict 由分数决定：>=75 推荐；55-74 谨慎；<55 不推荐。**不要凭感觉覆盖。**
 F. risks 列表必须与 riskRadar 中得分 ≥35 的维度一一对应，severity 按 35-55=低、56-75=中、>75=高。
 G. 中文输出，所有判断要写出"哪些成分 × 哪个肤质特征"。仅供日常护肤参考，不构成医学诊断。
-H. Skin Age Impact (skinAgeImpact)：假设用户每日规律使用本产品 12 个月，按再生生物学映射估算"皮肤生物学年龄变化年数"。**务必保守，真实世界 12 个月单品影响通常在 ±1 年内**：
-   * 起始 years = 0.0
-   * 致老化机制 (氧化应激/糖化/慢性炎症/屏障破坏/光敏化)：
-       高风险成分 × 易感特征  每条 +0.25
-       中风险组合              每条 +0.10
-   * 抗老化/再生机制 (抗氧化、促胶原、屏障修复、senolytic-like)：
-       明确证据组合            每条 -0.20
-       潜在支持                每条 -0.08
-   * 若产品为防晒且 SPF≥30 且 PA+++ 以上，额外 -0.30 (抑制光老化)
-   * 钳制到 [-1.0, +1.5]，保留 1 位小数
-   * direction：years>+0.3 → aging；-0.3..+0.3 → neutral；<-0.3 → rejuvenating
-   * confidence：成分清单完整且与肤质特征对应充分 → 高；部分识别 → 中；识别度低 → 低
-   * drivers：列出贡献最大的 2-4 项 (factor=成分或组合, mechanism=简短机制, contributionYears=带符号年数, citation=该机制的代表性文献引用)，其和≈years
-   * citation 格式："第一作者姓 + 年份, 期刊缩写"，如 "Lachenmeier 2008, Int J Environ Res Public Health" 或 "Draelos 2018, J Cosmet Dermatol"。优先引用该成分/机制经典文献；若不确定具体文献，给出该领域公认综述年份与期刊，不要写 "N/A"。
-   * caveat：固定写"基于成分-肤质再生生物学映射的保守估算，引用为机制示意而非该产品的直接临床试验，不构成医学诊断。"
-   horizon 固定为 "12_months"。
+H. Skin Age Impact (skinAgeImpact)：估算"每日规律使用本产品 12 个月后，皮肤生物学年龄相对自然老化基线的净变化年数"。**必须基于已发表临床/机制研究的效应量推断，不要凭感觉。** 自然老化基线已扣除——本数值仅是"该产品相对于不使用它"带来的增减。
+
+   计算流程：
+   (1) 起始 years = 0.0
+   (2) 识别产品的"机制贡献项"。对每一项，依据下表的临床效应量映射 contributionYears(带符号)；只在该机制确有证据时计入；将所有项相加；最后按 confidence 衰减并钳制。
+
+   抗老化/再生证据 (负值，使皮肤年轻化)：
+   • 广谱防晒 SPF≥30 且 PA+++/PPD≥8，每日使用：-0.40 到 -0.60 yr
+     依据：Hughes 2013 (Ann Intern Med) RCT 显示中年人群每日防晒 4.5 年使皮肤老化(显微地形学)减少 24%；按 12 个月线性外推。
+   • 全反式视黄酸 0.025-0.1% 或等效视黄醇 ≥0.3%，耐受良好：-0.50 到 -1.00 yr
+     依据：Kang 2005 (Arch Dermatol)、Fisher 1997 (NEJM) 显示 6-12 个月可逆转光老化组织学指标 (procollagen I ↑ 80%)。
+   • 局部 L-抗坏血酸 ≥10% (pH<3.5) 长期使用：-0.20 到 -0.35 yr
+     依据：Humbert 2003 (Exp Dermatol) 显示 6 个月真皮乳头层胶原密度显著增加。
+   • 烟酰胺 ≥4%：-0.15 到 -0.25 yr
+     依据：Bissett 2005 (Dermatol Surg) 12 周改善细纹、色斑、弹性。
+   • 屏障修复组合 (神经酰胺 + 胆固醇 + 游离脂肪酸 3:1:1 类) 用于受损屏障：-0.15 到 -0.25 yr
+     依据：Man 1996 (Arch Dermatol) 经表皮失水率与炎症标记下降。
+   • α-羟基酸 (甘醇酸 ≥8%, pH<4) 长期使用：-0.10 到 -0.20 yr
+     依据：Ditre 1996 (J Am Acad Dermatol) 6 个月真皮厚度 +25%。
+   • 多肽 (Matrixyl/铜肽) 长期使用：-0.05 到 -0.15 yr
+     依据：Robinson 2005 (Int J Cosmet Sci)，效应量较小。
+
+   致老化证据 (正值，加速衰老)：
+   • 高浓度变性酒精 (denat. alcohol >20%) × 屏障受损：+0.20 到 +0.40 yr
+     依据：Lachenmeier 2008 (Int J Environ Res Public Health) 长期屏障破坏与炎症老化。
+   • 强致敏香精/精油 × 敏感肤质 (linalool, limonene, citral 等氧化产物)：+0.15 到 +0.30 yr
+     依据：Hagvall 2007 (Contact Dermatitis) 慢性接触性皮炎 → inflammaging。
+   • 已知光敏化成分 (柑橘类呋喃香豆素、未稳定视黄醇日间使用) 且无防晒：+0.20 到 +0.40 yr
+     依据：Krutmann 2017 (J Dermatol Sci) 光老化机制综述。
+   • 高致痘成分 (肉豆蔻酸异丙酯、椰油酸等) × 多闭口/痘倾向：+0.10 到 +0.25 yr (主要是炎症后色沉与瘢痕加速质地老化)
+     依据：Fulton 1984 (J Soc Cosmet Chem) 致痘性分级。
+   • 高浓度视黄醇 × 屏障严重受损 (净效应可能为正)：+0.10 到 +0.30 yr
+     依据：Mukherjee 2006 (Clin Interv Aging) 不耐受导致持续刺激。
+
+   (3) 累加后乘以 confidence 系数：高=1.0, 中=0.7, 低=0.4 (识别度低时收敛回 0)。
+   (4) 钳制到 [-1.5, +1.2] yr，保留 1 位小数。真实世界 12 个月单品效应几乎不会超出此范围；若超出说明你高估了证据强度，请回查。
+   (5) direction：years < -0.3 → rejuvenating；-0.3..+0.3 → neutral；> +0.3 → aging。
+   (6) confidence：成分表完整 + 浓度可读 + 与肤质特征对应明确 → 高；成分部分可读或浓度未知 → 中；仅能识别品类 → 低。
+   (7) drivers：列出贡献最大的 2-4 项 (factor=成分或组合, mechanism=简短机制如"UV→MMP-1→胶原降解", contributionYears=按上表选取的带符号值, citation=上表对应的"第一作者姓 + 年份, 期刊缩写")。drivers 的 contributionYears 之和经 confidence 衰减与钳制后 ≈ years。
+   (8) caveat 固定写："效应量来自公开发表的临床/机制研究的线性外推，针对个体存在显著变异，不构成医学诊断。"
+   (9) horizon 固定 "12_months"。
+
+   **不要编造文献。** 只能引用上表中列出的研究；若某机制不在上表，宁可不计入也不要伪造引用。
 
 必须通过 submit_compatibility 工具返回结构化结果。同样输入必须产生同样输出。`;
 
