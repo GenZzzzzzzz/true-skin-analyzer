@@ -83,15 +83,13 @@ function ReportPage() {
           <h2 className="font-display text-xl font-semibold">肤质雷达</h2>
           <div className="h-[360px] mt-4">
             <ClientOnly fallback={<div className="h-full w-full animate-pulse rounded-2xl bg-muted/30" />}>
-              {() => (
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarData}>
-                    <PolarGrid stroke="var(--border)" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
-                    <Radar name="健康度" dataKey="A" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.25} />
-                  </RadarChart>
-                </ResponsiveContainer>
-              )}
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={radarData}>
+                  <PolarGrid stroke="var(--border)" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: "var(--muted-foreground)", fontSize: 12 }} />
+                  <Radar name="健康度" dataKey="A" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.25} />
+                </RadarChart>
+              </ResponsiveContainer>
             </ClientOnly>
           </div>
         </div>
