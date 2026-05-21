@@ -418,80 +418,14 @@ function ReportPage() {
 
 
 
-        {/* Two cards: skin + product */}
-        <div className="mt-6 grid gap-5 md:grid-cols-2">
-          <div className="stereo-card rounded-2xl p-6">
-            <div className="flex items-center gap-3">
-              {facePhoto && (
-                <img
-                  src={facePhoto}
-                  alt=""
-                  className="h-14 w-14 rounded-xl object-cover border border-white/10"
-                />
-              )}
-              <div>
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                  你的皮肤
-                </div>
-                <div className="font-display text-lg font-semibold">
-                  {report.skinSnapshot.type}
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {report.skinSnapshot.topConcerns.map((c) => (
-                <span
-                  key={c}
-                  className="rounded-full bg-accent/10 border border-accent/20 text-accent px-2.5 py-1 text-xs"
-                >
-                  {c}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="stereo-card rounded-2xl p-6">
-            <div className="flex items-center gap-3">
-              {productPhoto && (
-                <img
-                  src={productPhoto}
-                  alt=""
-                  className="h-14 w-14 rounded-xl object-cover border border-white/10"
-                />
-              )}
-              <div>
-                <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                  识别到的产品
-                </div>
-                <div className="font-display text-lg font-semibold">
-                  {report.product.category}
-                </div>
-              </div>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {report.product.keyIngredients.length === 0 && (
-                <span className="text-xs text-muted-foreground">未识别到关键成分</span>
-              )}
-              {report.product.keyIngredients.map((c) => (
-                <span
-                  key={c}
-                  className="rounded-full bg-fuchsia-400/10 border border-fuchsia-300/20 text-fuchsia-200 px-2.5 py-1 text-xs"
-                >
-                  {c}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Face hotspot map */}
+        {/* Face hotspot map — minimal, no side breakdown */}
         <div className="mt-6 stereo-card rounded-3xl p-6 md:p-8 overflow-hidden">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h2 className="font-display text-xl font-semibold">面部风险分布</h2>
-              <div className="text-xs text-muted-foreground mt-1">
-                红色越深 = 该区域越可能出问题 · 基于成分 × 你皮肤的反应推断
+              <div className="text-xs uppercase tracking-widest text-muted-foreground">
+                Facial Risk Map
               </div>
+              <h2 className="font-display text-xl font-semibold mt-1">面部风险分布</h2>
             </div>
             <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1.5">
@@ -505,8 +439,7 @@ function ReportPage() {
             </div>
           </div>
 
-          <div className="mt-5 grid gap-6 md:grid-cols-[1.4fr,1fr] items-start">
-            {/* Image + hotspots */}
+          <div className="mt-6 mx-auto max-w-xl">
             <Stereo3DFace>
               <img
                 src={faceMeshImg}
@@ -515,34 +448,19 @@ function ReportPage() {
                 draggable={false}
                 style={{ transform: "translateZ(20px)" }}
               />
-              {/* Hotspot overlay — 基于面部分割的精细轮廓 */}
-              {/* 皮下泛色层 —— 用 multiply 让红/黄"渗进"肤色,而不是浮在表面 */}
               <svg
                 className="absolute inset-0 w-full h-full pointer-events-none"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
-                style={{
-                  transform: "translateZ(28px)",
-                  mixBlendMode: "multiply",
-                  opacity: 0.98,
-                }}
+                style={{ transform: "translateZ(28px)", mixBlendMode: "multiply", opacity: 0.98 }}
               >
                 <defs>
-                  {/* 大幅羽化:让色块边缘自然消散在皮肤里,完全无硬边 */}
                   <filter id="skin-bleed" x="-40%" y="-40%" width="180%" height="180%">
                     <feGaussianBlur stdDeviation="2.2" />
                   </filter>
                   <clipPath id="face-skin" clipPathUnits="userSpaceOnUse">
-                    <polygon points="
-                      8,10 16,6 26,5 36,7 42,12 44,20 45,32 44,44
-                      43,54 41,64 38,74 34,84 30,92 25,94 20,92 16,84
-                      13,74 11,64 9,54 8,44 7,34 7,22
-                    " />
-                    <polygon points="
-                      58,10 64,7 74,5 84,7 91,12 93,22 94,34 93,46
-                      92,58 90,68 87,77 83,86 77,92 70,92 65,88 62,80
-                      60,70 58,60 57,50 56,40 57,28 58,18
-                    " />
+                    <polygon points="8,10 16,6 26,5 36,7 42,12 44,20 45,32 44,44 43,54 41,64 38,74 34,84 30,92 25,94 20,92 16,84 13,74 11,64 9,54 8,44 7,34 7,22" />
+                    <polygon points="58,10 64,7 74,5 84,7 91,12 93,22 94,34 93,46 92,58 90,68 87,77 83,86 77,92 70,92 65,88 62,80 60,70 58,60 57,50 56,40 57,28 58,18" />
                   </clipPath>
                 </defs>
                 <g clipPath="url(#face-skin)" filter="url(#skin-bleed)">
@@ -550,30 +468,19 @@ function ReportPage() {
                     const v = getZoneIntensity(z, report.riskRadar);
                     if (v < 45) return null;
                     const isHot = v >= 70;
-                    // 更饱和的红/黄,让颜色在 multiply 后依然明显可见
                     const rgb = isHot ? "240,40,40" : "250,165,30";
                     const alpha = 0.55 + (v / 100) * 0.30;
                     return (
-                      <path
-                        key={z.id}
-                        d={z.path}
-                        fill={`rgba(${rgb},${alpha})`}
-                        className={isHot ? "animate-pulse" : ""}
-                      />
+                      <path key={z.id} d={z.path} fill={`rgba(${rgb},${alpha})`} className={isHot ? "animate-pulse" : ""} />
                     );
                   })}
                 </g>
               </svg>
-              {/* 高光提示层 —— 极淡的暖光,只在重灾区呼吸,增加"皮下炎症发热"的感觉 */}
               <svg
                 className="absolute inset-0 w-full h-full pointer-events-none"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
-                style={{
-                  transform: "translateZ(32px)",
-                  mixBlendMode: "soft-light",
-                  opacity: 0.92,
-                }}
+                style={{ transform: "translateZ(32px)", mixBlendMode: "soft-light", opacity: 0.92 }}
               >
                 <defs>
                   <filter id="skin-glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -587,17 +494,11 @@ function ReportPage() {
                     const isHot = v >= 70;
                     const rgb = isHot ? "255,90,70" : "255,180,60";
                     return (
-                      <path
-                        key={`${z.id}-glow`}
-                        d={z.path}
-                        fill={`rgba(${rgb},0.72)`}
-                        className={isHot ? "animate-pulse" : ""}
-                      />
+                      <path key={`${z.id}-glow`} d={z.path} fill={`rgba(${rgb},0.72)`} className={isHot ? "animate-pulse" : ""} />
                     );
                   })}
                 </g>
               </svg>
-              {/* Labels */}
               <div className="absolute inset-0" style={{ transform: "translateZ(60px)" }}>
                 {FACE_ZONES.map((z) => {
                   const v = getZoneIntensity(z, report.riskRadar);
@@ -623,153 +524,26 @@ function ReportPage() {
                 })}
               </div>
             </Stereo3DFace>
-
-
-            {/* Zone breakdown list */}
-            <div className="space-y-2">
-              {[...FACE_ZONES]
-                .map((z) => ({ z, v: getZoneIntensity(z, report.riskRadar) }))
-                .sort((a, b) => b.v - a.v)
-                .map(({ z, v }) => {
-                  const meta = intensityLabel(v);
-                  return (
-                    <div
-                      key={z.id}
-                      className="flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2.5"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">{z.label}</div>
-                        <div className="text-[11px] text-muted-foreground truncate">
-                          {z.hint}
-                        </div>
-                      </div>
-                      <div className="w-20 h-1.5 rounded-full bg-white/5 overflow-hidden shrink-0">
-                        <div
-                          className="h-full rounded-full"
-                          style={{
-                            width: `${Math.max(4, v)}%`,
-                            background:
-                              v >= 70
-                                ? "linear-gradient(90deg, oklch(0.7 0.22 25), oklch(0.6 0.25 15))"
-                                : v >= 45
-                                  ? "linear-gradient(90deg, oklch(0.8 0.18 75), oklch(0.7 0.2 55))"
-                                  : "linear-gradient(90deg, oklch(0.78 0.15 165), oklch(0.7 0.16 195))",
-                          }}
-                        />
-                      </div>
-                      <span className={`text-[11px] w-12 text-right ${meta.color}`}>
-                        {meta.text}
-                      </span>
-                    </div>
-                  );
-                })}
-            </div>
           </div>
         </div>
 
-        {/* Risk radar */}
-        <div className="mt-6 stereo-card rounded-3xl p-6 md:p-8">
-          <h2 className="font-display text-xl font-semibold">风险维度雷达</h2>
-          <div className="text-xs text-muted-foreground mt-1">数值越高 = 风险越大</div>
-          <div className="h-[320px] mt-4">
-            <ClientOnly fallback={<div className="h-full w-full animate-pulse rounded-2xl bg-muted/30" />}>
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData}>
-                  <PolarGrid stroke="var(--border)" />
-                  <PolarAngleAxis
-                    dataKey="subject"
-                    tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                  />
-                  <Radar
-                    name="风险"
-                    dataKey="A"
-                    stroke="oklch(0.7 0.22 25)"
-                    fill="oklch(0.7 0.22 25)"
-                    fillOpacity={0.25}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </ClientOnly>
-          </div>
-        </div>
-
-
-
-        {/* Risks list */}
-        {report.risks.length > 0 && (
-          <div className="mt-6">
-            <h2 className="font-display text-xl font-semibold mb-3 flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-400" />
-              潜在风险
-            </h2>
-            <div className="grid gap-3">
-              {report.risks.map((r, i) => (
-                <div
-                  key={i}
-                  className="stereo-card rounded-2xl p-5 flex items-start gap-4"
-                >
-                  <span
-                    className={`shrink-0 rounded-full border px-2.5 py-1 text-xs ${SEV_STYLE[r.severity]}`}
-                  >
-                    {r.severity}
-                  </span>
-                  <div className="flex-1">
-                    <div className="font-display font-semibold">{r.type}</div>
-                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                      {r.reason}
-                    </p>
-                  </div>
-                </div>
-              ))}
+        {/* Benefits only */}
+        {report.benefits.length > 0 && (
+          <div className="mt-6 stereo-card rounded-3xl p-6 md:p-8">
+            <div className="text-xs uppercase tracking-widest text-muted-foreground">
+              Potential Benefits
             </div>
-          </div>
-        )}
-
-        {/* Benefits + Tips + Alternatives */}
-        <div className="mt-6 grid gap-5 md:grid-cols-2">
-          {report.benefits.length > 0 && (
-            <div className="stereo-card rounded-2xl p-6">
-              <h3 className="font-display text-lg font-semibold flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400" /> 潜在好处
-              </h3>
-              <ul className="mt-3 space-y-2">
-                {report.benefits.map((b, i) => (
-                  <li key={i} className="flex gap-2 text-sm">
-                    <span className="text-emerald-400">·</span>
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <div className="stereo-card rounded-2xl p-6">
-            <h3 className="font-display text-lg font-semibold flex items-center gap-2">
-              <Lightbulb className="h-5 w-5 text-accent" /> 使用建议
+            <h3 className="font-display text-xl font-semibold mt-1 flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-emerald-400" /> 潜在好处
             </h3>
-            <ul className="mt-3 space-y-2">
-              {report.usageTips.map((t, i) => (
+            <ul className="mt-4 space-y-2">
+              {report.benefits.map((b, i) => (
                 <li key={i} className="flex gap-2 text-sm">
-                  <span className="text-accent">·</span>
-                  <span>{t}</span>
+                  <span className="text-emerald-400">·</span>
+                  <span>{b}</span>
                 </li>
               ))}
             </ul>
-          </div>
-        </div>
-
-        {report.alternatives && report.alternatives.length > 0 && (
-          <div className="mt-6 stereo-card rounded-2xl p-6">
-            <h3 className="font-display text-lg font-semibold">替代成分方向</h3>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {report.alternatives.map((a, i) => (
-                <span
-                  key={i}
-                  className="rounded-full bg-white/5 border border-white/10 px-3 py-1.5 text-sm"
-                >
-                  {a}
-                </span>
-              ))}
-            </div>
           </div>
         )}
 
