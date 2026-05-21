@@ -396,24 +396,21 @@ function ReportPage() {
                 style={{ transform: "translateZ(20px)" }}
               />
               {/* Hotspot overlay — 基于面部分割的精细轮廓 */}
+              {/* 皮下泛色层 —— 用 multiply 让红/黄"渗进"肤色,而不是浮在表面 */}
               <svg
                 className="absolute inset-0 w-full h-full pointer-events-none"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
                 style={{
-                  transform: "translateZ(35px)",
-                  mixBlendMode: "screen",
-                  filter: "drop-shadow(0 0 6px rgba(0,0,0,0.5))",
+                  transform: "translateZ(28px)",
+                  mixBlendMode: "multiply",
+                  opacity: 0.85,
                 }}
               >
                 <defs>
-                  <filter id="blob-blur" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="0.4" />
-                  </filter>
-                  {/* Inner-glow filter: makes color blocks look like they're radiating from under the skin */}
-                  <filter id="inner-glow" x="-30%" y="-30%" width="160%" height="160%">
-                    <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="atop" />
+                  {/* 大幅羽化:让色块边缘自然消散在皮肤里,完全无硬边 */}
+                  <filter id="skin-bleed" x="-40%" y="-40%" width="180%" height="180%">
+                    <feGaussianBlur stdDeviation="2.2" />
                   </filter>
                   <clipPath id="face-skin" clipPathUnits="userSpaceOnUse">
                     <polygon points="
@@ -428,39 +425,54 @@ function ReportPage() {
                     " />
                   </clipPath>
                 </defs>
-                <g clipPath="url(#face-skin)">
+                <g clipPath="url(#face-skin)" filter="url(#skin-bleed)">
                   {FACE_ZONES.map((z) => {
                     const v = getZoneIntensity(z, report.riskRadar);
                     if (v < 45) return null;
                     const isHot = v >= 70;
-                    const rgb = isHot ? "248,113,113" : "251,191,36";
-                    const fillAlpha = 0.55 + (v / 100) * 0.25;
-                    const strokeAlpha = isHot ? 0.9 : 0.75;
+                    // 偏暗的红/黄,multiply 之后呈现皮肤泛红/暗黄的真实感
+                    const rgb = isHot ? "200,70,70" : "210,150,60";
+                    const alpha = 0.45 + (v / 100) * 0.25;
                     return (
-                      <g key={z.id} className={isHot ? "animate-pulse" : ""}>
-                        {/* 外发光晕 —— 模拟皮下渗透 */}
-                        <path
-                          d={z.path}
-                          fill={`rgba(${rgb},${fillAlpha * 0.45})`}
-                          filter="url(#blob-blur)"
-                          style={{ filter: "blur(1.2px)" }}
-                        />
-                        {/* 填充层 + 内发光 */}
-                        <path
-                          d={z.path}
-                          fill={`rgba(${rgb},${fillAlpha})`}
-                          filter="url(#inner-glow)"
-                        />
-                        {/* 描边层 —— 勾勒分割轮廓 */}
-                        <path
-                          d={z.path}
-                          fill="none"
-                          stroke={`rgba(${rgb},${strokeAlpha})`}
-                          strokeWidth={isHot ? 0.75 : 0.6}
-                          strokeLinejoin="round"
-                          vectorEffect="non-scaling-stroke"
-                        />
-                      </g>
+                      <path
+                        key={z.id}
+                        d={z.path}
+                        fill={`rgba(${rgb},${alpha})`}
+                        className={isHot ? "animate-pulse" : ""}
+                      />
+                    );
+                  })}
+                </g>
+              </svg>
+              {/* 高光提示层 —— 极淡的暖光,只在重灾区呼吸,增加"皮下炎症发热"的感觉 */}
+              <svg
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                style={{
+                  transform: "translateZ(32px)",
+                  mixBlendMode: "soft-light",
+                  opacity: 0.7,
+                }}
+              >
+                <defs>
+                  <filter id="skin-glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="3" />
+                  </filter>
+                </defs>
+                <g clipPath="url(#face-skin)" filter="url(#skin-glow)">
+                  {FACE_ZONES.map((z) => {
+                    const v = getZoneIntensity(z, report.riskRadar);
+                    if (v < 60) return null;
+                    const isHot = v >= 70;
+                    const rgb = isHot ? "255,140,120" : "255,210,130";
+                    return (
+                      <path
+                        key={`${z.id}-glow`}
+                        d={z.path}
+                        fill={`rgba(${rgb},0.55)`}
+                        className={isHot ? "animate-pulse" : ""}
+                      />
                     );
                   })}
                 </g>
