@@ -138,12 +138,12 @@ function Home() {
         </div>
 
         {/* Rotating 3D face hero */}
-        <div className="mb-12 flex justify-center">
+        <div className="mb-14 flex justify-center">
           <RotatingFaceHero />
         </div>
 
         {/* The two capture cards */}
-        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 max-w-3xl mx-auto">
+        <div className="grid gap-8 sm:gap-12 md:grid-cols-2 max-w-4xl mx-auto">
           <CaptureCard
             kind="face"
             title="你的脸"
