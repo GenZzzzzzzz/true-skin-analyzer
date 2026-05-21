@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
-import { Camera, Upload, AlertTriangle, Loader2, RotateCcw } from "lucide-react";
+import { Camera, Upload, Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { preprocessImage, type PreprocessResult } from "@/lib/image-preprocess";
 import { analyzeSkin } from "@/lib/skin.functions";
