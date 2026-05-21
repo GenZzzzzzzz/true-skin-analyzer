@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Loader2, Sparkles, ShieldCheck } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { CaptureCard } from "@/components/CaptureCard";
+import { RotatingFaceHero } from "@/components/RotatingFaceHero";
 import { preprocessImage } from "@/lib/image-preprocess";
 import { preprocessProduct } from "@/lib/product-preprocess";
 import { analyzeCompatibility } from "@/lib/compatibility.functions";
