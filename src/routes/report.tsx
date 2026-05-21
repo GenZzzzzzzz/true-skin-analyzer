@@ -16,6 +16,12 @@ import {
   type Verdict,
 } from "@/lib/compatibility-types";
 
+const VERDICT_MAP: Record<Verdict, { label: string; sub: string }> = {
+  推荐: { label: "放心用", sub: "" },
+  谨慎: { label: "最好别用", sub: "但也不是不行" },
+  不推荐: { label: "千万别用", sub: "" },
+};
+
 export const Route = createFileRoute("/report")({
   head: () => ({
     meta: [
@@ -153,12 +159,19 @@ function ReportPage() {
               </div>
             </div>
             <div>
-              <div
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${verdictStyle.bg} ${verdictStyle.text} ${verdictStyle.ring}`}
-              >
-                {report.verdict === "推荐" && <CheckCircle2 className="h-4 w-4" />}
-                {report.verdict !== "推荐" && <AlertTriangle className="h-4 w-4" />}
-                AI 判断：{report.verdict}
+              <div className="flex items-center gap-3">
+                <div
+                  className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${verdictStyle.bg} ${verdictStyle.text} ${verdictStyle.ring}`}
+                >
+                  {report.verdict === "推荐" && <CheckCircle2 className="h-4 w-4" />}
+                  {report.verdict !== "推荐" && <AlertTriangle className="h-4 w-4" />}
+                  {VERDICT_MAP[report.verdict]?.label ?? report.verdict}
+                </div>
+                {VERDICT_MAP[report.verdict]?.sub && (
+                  <span className="text-xs text-muted-foreground">
+                    {VERDICT_MAP[report.verdict].sub}
+                  </span>
+                )}
               </div>
               <h1 className="mt-4 font-display text-2xl md:text-3xl font-semibold">
                 {report.product.recognized
