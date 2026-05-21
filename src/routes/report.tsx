@@ -312,8 +312,10 @@ function ReportPage() {
           </Link>
         </div>
 
-        {/* Hero: score ring + verdict */}
+        {/* Hero: score ring + verdict + 3D face */}
+        <div className="grid gap-6 lg:grid-cols-[1fr,auto] items-stretch">
         <div className="stereo-card rounded-[2rem] p-8 md:p-10">
+
           <div className="grid gap-8 md:grid-cols-[auto,1fr] items-center">
             <div className="relative h-44 w-44 mx-auto md:mx-0">
               <svg viewBox="0 0 140 140" className="h-full w-full -rotate-90">
@@ -406,13 +408,9 @@ function ReportPage() {
           </div>
         </div>
 
-        {/* Skin Age Impact — Regenerative Bio hero number */}
-        {report.skinAgeImpact && <SkinAgeImpactCard impact={report.skinAgeImpact} />}
-
-
-
         {/* Face hotspot map — minimal, no side breakdown */}
-        <div className="mt-6 stereo-card rounded-3xl p-6 md:p-8 overflow-hidden">
+
+        <div className="stereo-card rounded-3xl p-6 md:p-8 overflow-hidden lg:w-[380px]">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <div className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -519,6 +517,12 @@ function ReportPage() {
             </Stereo3DFace>
           </div>
         </div>
+        </div>
+
+        {/* Skin Age Impact — Regenerative Bio hero number */}
+        {report.skinAgeImpact && <SkinAgeImpactCard impact={report.skinAgeImpact} />}
+
+
 
         {/* Benefits only */}
         {report.benefits.length > 0 && (
