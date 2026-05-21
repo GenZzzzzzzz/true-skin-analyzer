@@ -1,17 +1,9 @@
-import { createFileRoute, Link, ClientOnly } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  ResponsiveContainer,
-} from "recharts";
-import { ArrowLeft, RefreshCw, AlertTriangle, CheckCircle2, Lightbulb } from "lucide-react";
+import { ArrowLeft, RefreshCw, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import {
   type CompatibilityReport,
-  RISK_RADAR_LABELS,
   type RiskRadar,
   type Severity,
   type Verdict,
