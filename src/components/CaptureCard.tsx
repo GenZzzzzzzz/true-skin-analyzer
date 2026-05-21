@@ -237,6 +237,10 @@ export function CaptureCard({
                     className="h-full w-full object-cover"
                     playsInline
                     muted
+                    onLoadedMetadata={() => {
+                      setCameraReady(true);
+                      setCameraStarting(false);
+                    }}
                   />
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                     {kind === "face" ? (
@@ -266,9 +270,10 @@ export function CaptureCard({
                   </button>
                   <button
                     onClick={snap}
-                    className="rounded-full bg-accent px-6 py-2.5 font-medium text-accent-foreground"
+                    disabled={!cameraReady}
+                    className="rounded-full bg-accent px-6 py-2.5 font-medium text-accent-foreground disabled:cursor-wait disabled:opacity-60"
                   >
-                    拍摄
+                    {cameraReady ? "拍摄" : "准备中"}
                   </button>
                 </div>
               </>
