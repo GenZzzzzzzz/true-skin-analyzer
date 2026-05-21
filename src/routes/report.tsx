@@ -18,15 +18,14 @@ import {
 } from "@/lib/compatibility-types";
 import faceMeshImg from "@/assets/face-mesh.png";
 
-// 面部分区 → 在 wireframe 图上的相对位置 (%)，以及该分区主要受哪些风险影响
-// blobs: 该分区由多个椭圆叠加而成，形成不规则覆盖形状（坐标都是相对 image 的 %）
-type Blob = { cx: number; cy: number; rx: number; ry: number; rot?: number };
+// 面部分区 → 在 wireframe 图上的精细轮廓 (SVG path d, viewBox 100x100)
+// path: 基于面部分割描出的不规则形状，贴合每一块皮肤亚区（额头/鼻/眼眶/颊/下巴/下颌/太阳穴）
 type FaceZone = {
   id: string;
   label: string;
-  labelX: number; // label 位置
+  labelX: number;
   labelY: number;
-  blobs: Blob[]; // 多个椭圆叠加 + 模糊 → 不规则形状
+  path: string;
   drivers: Array<keyof RiskRadar>;
   hint: string;
 };
@@ -35,99 +34,70 @@ const FACE_ZONES: FaceZone[] = [
   {
     id: "forehead",
     label: "额头 · T 区",
-    labelX: 27, labelY: 20,
-    blobs: [
-      { cx: 27, cy: 28, rx: 13, ry: 4.5 },
-      { cx: 22, cy: 29, rx: 6, ry: 4 },
-      { cx: 32, cy: 29, rx: 6, ry: 4 },
-      { cx: 27, cy: 32, rx: 8, ry: 3 },
-    ],
+    labelX: 27, labelY: 18,
+    path: "M14,28 C16,20 22,16 27,16 C32,16 38,20 40,28 C40,33 38,36 34,37 C30,38 24,38 20,37 C16,36 14,33 14,28 Z",
     drivers: ["oiliness", "comedogenic"],
     hint: "出油 / 闭口高发区",
   },
   {
     id: "nose",
     label: "鼻翼 · 黑头区",
-    labelX: 27, labelY: 53,
-    blobs: [
-      { cx: 27, cy: 60, rx: 4, ry: 7 },
-      { cx: 24, cy: 64, rx: 3.5, ry: 3 },
-      { cx: 30, cy: 64, rx: 3.5, ry: 3 },
-    ],
+    labelX: 27, labelY: 52,
+    path: "M25,46 C24,52 23,58 22,63 C21,67 21,70 24,71 C26,72 28,72 30,71 C33,70 33,67 32,63 C31,58 30,52 29,46 C28,45 26,45 25,46 Z",
     drivers: ["oiliness", "comedogenic", "irritation"],
     hint: "黑头、毛孔粗大",
   },
   {
     id: "eye",
     label: "眼周",
-    labelX: 38, labelY: 43,
-    blobs: [
-      { cx: 21, cy: 47, rx: 5, ry: 2.8, rot: -6 },
-      { cx: 33, cy: 47, rx: 5, ry: 2.8, rot: 6 },
-    ],
+    labelX: 38, labelY: 42,
+    path: "M15,47 C17,44 21,43 24,44 C26,45 27,47 26,49 C24,51 20,52 17,51 C15,50 14,49 15,47 Z M30,47 C32,44 36,43 39,44 C41,45 41,47 40,49 C38,51 34,52 31,51 C29,50 28,49 30,47 Z",
     drivers: ["allergy", "irritation", "dryness"],
     hint: "皮肤最薄，易刺痛 / 过敏",
   },
   {
     id: "left-cheek",
     label: "左颊",
-    labelX: 14, labelY: 56,
-    blobs: [
-      { cx: 17, cy: 63, rx: 6, ry: 8, rot: -10 },
-      { cx: 14, cy: 60, rx: 4, ry: 5 },
-      { cx: 19, cy: 70, rx: 4.5, ry: 4 },
-    ],
+    labelX: 14, labelY: 55,
+    path: "M11,54 C13,52 16,52 19,54 C21,57 22,62 21,67 C20,72 17,76 14,77 C11,76 9,72 9,67 C9,62 9,57 11,54 Z",
     drivers: ["dryness", "irritation", "photo"],
     hint: "干燥 / 泛红 / 晒伤区",
   },
   {
     id: "right-cheek",
     label: "右颊",
-    labelX: 41, labelY: 56,
-    blobs: [
-      { cx: 37, cy: 63, rx: 6, ry: 8, rot: 10 },
-      { cx: 40, cy: 60, rx: 4, ry: 5 },
-      { cx: 35, cy: 70, rx: 4.5, ry: 4 },
-    ],
+    labelX: 41, labelY: 55,
+    path: "M43,54 C41,52 38,52 35,54 C33,57 32,62 33,67 C34,72 37,76 40,77 C43,76 45,72 45,67 C45,62 45,57 43,54 Z",
     drivers: ["dryness", "irritation", "photo"],
     hint: "干燥 / 泛红 / 晒伤区",
   },
   {
     id: "chin",
     label: "下巴",
-    labelX: 27, labelY: 94,
-    blobs: [
-      { cx: 27, cy: 87, rx: 7, ry: 4 },
-      { cx: 23, cy: 85, rx: 4, ry: 3 },
-      { cx: 31, cy: 85, rx: 4, ry: 3 },
-    ],
+    labelX: 27, labelY: 95,
+    path: "M19,82 C22,80 32,80 35,82 C36,85 35,89 32,91 C29,93 25,93 22,91 C19,89 18,85 19,82 Z",
     drivers: ["comedogenic", "oiliness"],
     hint: "周期性闷痘高发区",
   },
   {
     id: "jaw-side",
     label: "下颌线",
-    labelX: 78, labelY: 68,
-    blobs: [
-      { cx: 73, cy: 78, rx: 10, ry: 4, rot: -8 },
-      { cx: 67, cy: 76, rx: 4, ry: 3.5 },
-      { cx: 80, cy: 80, rx: 4, ry: 3.5 },
-    ],
+    labelX: 78, labelY: 66,
+    path: "M63,72 C70,70 78,69 86,71 C89,74 89,80 86,84 C80,88 73,90 67,89 C63,87 61,82 62,77 C62,75 62,73 63,72 Z",
     drivers: ["comedogenic", "irritation"],
     hint: "闷痘 / 摩擦刺激",
   },
   {
     id: "temple",
     label: "太阳穴",
-    labelX: 66, labelY: 28,
-    blobs: [
-      { cx: 68, cy: 36, rx: 6, ry: 7, rot: 12 },
-      { cx: 64, cy: 39, rx: 4, ry: 5 },
-    ],
+    labelX: 66, labelY: 26,
+    path: "M61,30 C64,26 70,25 74,27 C75,32 74,38 72,42 C68,43 64,42 62,40 C60,37 60,33 61,30 Z",
     drivers: ["photo", "dryness"],
     hint: "易晒伤 / 干纹",
   },
 ];
+
+
 
 
 function getZoneIntensity(zone: FaceZone, radar: RiskRadar): number {
@@ -447,25 +417,22 @@ function ReportPage() {
                 className="w-full h-auto block opacity-95 grayscale"
                 draggable={false}
               />
-              {/* Hotspot overlay — irregular blurred blobs via SVG */}
+              {/* Hotspot overlay — 基于面部分割的精细轮廓 */}
               <svg
                 className="absolute inset-0 w-full h-full pointer-events-none mix-blend-multiply"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
               >
                 <defs>
-                  <filter id="blob-blur" x="-30%" y="-30%" width="160%" height="160%">
-                    <feGaussianBlur stdDeviation="0.6" />
+                  <filter id="blob-blur" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="0.35" />
                   </filter>
-                  {/* 面部轮廓裁剪 —— 把高亮限制在皮肤区域内 */}
                   <clipPath id="face-skin" clipPathUnits="userSpaceOnUse">
-                    {/* 正面脸（左侧头像） */}
                     <polygon points="
                       27,14 33,15 38,18 41,24 42,32 43,42 42,52
                       40,62 37,72 33,82 29,90 25,92 21,90 17,82
                       14,72 12,62 11,52 11,42 12,32 14,24 18,18 22,15
                     " />
-                    {/* 3/4 侧面脸（右侧头像）—— 主要覆盖太阳穴 / 下颌线 / 脸颊 */}
                     <polygon points="
                       72,14 78,15 83,19 86,26 88,35 89,46 88,56
                       86,66 83,75 79,84 74,90 68,90 64,86 62,78
@@ -479,25 +446,25 @@ function ReportPage() {
                     if (v < 45) return null;
                     const isHot = v >= 70;
                     const rgb = isHot ? "239,68,68" : "251,191,36";
-                    const alpha = 0.78 + (v / 100) * 0.18;
-                    const scale = 1 + (v - 45) / 110;
+                    const fillAlpha = 0.72 + (v / 100) * 0.2;
+                    const strokeAlpha = isHot ? 0.95 : 0.85;
                     return (
-                      <g
-                        key={z.id}
-                        filter="url(#blob-blur)"
-                        className={isHot ? "animate-pulse" : ""}
-                      >
-                        {z.blobs.map((b, i) => (
-                          <ellipse
-                            key={i}
-                            cx={b.cx}
-                            cy={b.cy}
-                            rx={b.rx * scale}
-                            ry={b.ry * scale}
-                            transform={b.rot ? `rotate(${b.rot} ${b.cx} ${b.cy})` : undefined}
-                            fill={`rgba(${rgb},${alpha})`}
-                          />
-                        ))}
+                      <g key={z.id} className={isHot ? "animate-pulse" : ""}>
+                        {/* 填充层 —— 轻微模糊使边缘更自然 */}
+                        <path
+                          d={z.path}
+                          fill={`rgba(${rgb},${fillAlpha})`}
+                          filter="url(#blob-blur)"
+                        />
+                        {/* 描边层 —— 勾勒分割轮廓 */}
+                        <path
+                          d={z.path}
+                          fill="none"
+                          stroke={`rgba(${rgb},${strokeAlpha})`}
+                          strokeWidth={0.4}
+                          strokeLinejoin="round"
+                          vectorEffect="non-scaling-stroke"
+                        />
                       </g>
                     );
                   })}
