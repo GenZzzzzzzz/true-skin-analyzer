@@ -107,7 +107,9 @@ export const analyzeSkin = createServerFn({ method: "POST" })
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-pro",
+          // Flash 在多分区 + 已对齐 + 已 Retinex + 红通道增强的高质量输入下，
+          // 与 Pro 的诊断一致度高，但延迟约为 1/3。
+          model: "google/gemini-2.5-flash",
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content },

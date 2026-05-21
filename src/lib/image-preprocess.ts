@@ -18,9 +18,9 @@ export interface PreprocessResult {
   previewDataUrl: string; // aligned full-face preview for UI
 }
 
-const FULL_MAX = 1600; // high-res to preserve pores / fine lines
-const ZONE_MAX = 1024;
-const JPEG_Q = 0.95;
+const FULL_MAX = 1280; // 足够保留毛孔/细纹，传输和模型解码都更快
+const ZONE_MAX = 768;
+const JPEG_Q = 0.9;
 
 export async function preprocessImage(
   source: Blob | HTMLVideoElement,
@@ -37,10 +37,16 @@ export async function preprocessImage(
     console.warn("face landmarker failed, falling back", e);
   }
 
-  // 2. Aligned full-face canvas
-  const aligned = landmarks
-    ? alignFace(sourceCanvas, landmarks, FULL_MAX)
-    : centerSquare(sourceCanvas, FULL_MAX);
+  // 2. Aligned full-face canvas (+ transform so we can map landmarks without re-detect)
+  let aligned: HTMLCanvasElement;
+  let alignT: AlignTransform | null = null;
+  if (landmarks) {
+    const r = alignFace(sourceCanvas, landmarks, FULL_MAX);
+    aligned = r.canvas;
+    alignT = r.t;
+  } else {
+    aligned = centerSquare(sourceCanvas, FULL_MAX);
+  }
 
   // 3. Illumination correction (single-scale retinex)
   retinexInPlace(aligned);
@@ -52,19 +58,12 @@ export async function preprocessImage(
     { zone: "full", label: "对齐+光照矫正后的全脸", base64: fullBase64 },
   ];
 
-  if (landmarks) {
-    // Map landmarks into aligned canvas coordinates? Simpler: re-detect on aligned.
-    let alignedLmks: NormalizedPoint[] | null = null;
-    try {
-      const lm = await getFaceLandmarker();
-      const res = lm.detect(aligned);
-      alignedLmks = res.faceLandmarks?.[0] ?? null;
-    } catch {}
-
-    const lmks = alignedLmks ?? landmarks;
+  if (landmarks && alignT) {
     const W = aligned.width;
     const H = aligned.height;
-    const px = (i: number) => ({ x: lmks[i].x * W, y: lmks[i].y * H });
+    // Map source landmarks → aligned-canvas pixels (avoids a 2nd MediaPipe pass).
+    const px = (i: number) => mapLandmark(landmarks![i], alignT!);
+    void W; void H;
 
     // T-zone: forehead top → nose bottom, width ~ nose width * 3
     const fh = px(LMK.forehead);
@@ -158,17 +157,21 @@ async function sourceToCanvas(source: Blob | HTMLVideoElement): Promise<HTMLCanv
   return c;
 }
 
+interface AlignTransform {
+  angle: number; cx: number; cy: number; scale: number; dim: number;
+  srcW: number; srcH: number;
+}
+
 function alignFace(
   source: HTMLCanvasElement,
   lmks: NormalizedPoint[],
   maxSize: number,
-): HTMLCanvasElement {
+): { canvas: HTMLCanvasElement; t: AlignTransform } {
   const W = source.width, H = source.height;
   const le = { x: lmks[LMK.leftEyeOuter].x * W, y: lmks[LMK.leftEyeOuter].y * H };
   const re = { x: lmks[LMK.rightEyeOuter].x * W, y: lmks[LMK.rightEyeOuter].y * H };
   const angle = Math.atan2(re.y - le.y, re.x - le.x);
 
-  // bounding box of all landmarks
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const p of lmks) {
     const x = p.x * W, y = p.y * H;
@@ -177,7 +180,7 @@ function alignFace(
   }
   const cx = (minX + maxX) / 2;
   const cy = (minY + maxY) / 2;
-  const faceSize = Math.max(maxX - minX, maxY - minY) * 1.45; // include forehead / chin margin
+  const faceSize = Math.max(maxX - minX, maxY - minY) * 1.45;
 
   const out = document.createElement("canvas");
   const scale = Math.min(1, maxSize / faceSize);
@@ -194,7 +197,19 @@ function alignFace(
   ctx.translate(-cx, -cy);
   ctx.drawImage(source, 0, 0);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  return out;
+  return { canvas: out, t: { angle, cx, cy, scale, dim, srcW: W, srcH: H } };
+}
+
+// Map a normalized source landmark into aligned-canvas pixel coords using the
+// same affine as alignFace: (sx-cx,sy-cy) → rotate(-angle) → scale → +dim/2.
+function mapLandmark(p: NormalizedPoint, t: AlignTransform) {
+  const sx = p.x * t.srcW - t.cx;
+  const sy = p.y * t.srcH - t.cy;
+  const cos = Math.cos(-t.angle), sin = Math.sin(-t.angle);
+  return {
+    x: (sx * cos - sy * sin) * t.scale + t.dim / 2,
+    y: (sx * sin + sy * cos) * t.scale + t.dim / 2,
+  };
 }
 
 function centerSquare(source: HTMLCanvasElement, maxSize: number): HTMLCanvasElement {
