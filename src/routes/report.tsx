@@ -463,7 +463,7 @@ function ReportPage() {
                   if (v < 45) return null;
                   const isHot = v >= 70;
                   const rgb = isHot ? "239,68,68" : "251,191,36";
-                  const alpha = 0.4 + (v / 100) * 0.45;
+                  const alpha = 0.75 + (v / 100) * 0.2;
                   const scale = 1 + (v - 45) / 110; // 1.0 ~ 1.5
                   return (
                     <g
