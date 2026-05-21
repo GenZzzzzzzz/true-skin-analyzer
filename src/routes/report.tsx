@@ -276,12 +276,22 @@ function ReportPage() {
                   {report.verdict === "推荐" && <CheckCircle2 className="h-4 w-4" />}
                   {report.verdict !== "推荐" && <AlertTriangle className="h-4 w-4" />}
                   {report.verdict === "谨慎"
-                    ? `可能有 ${report.risks.length} 个风险`
+                    ? (() => {
+                        const sevOrder: Record<Severity, number> = { 高: 3, 中: 2, 低: 1 };
+                        const probMap: Record<Severity, number> = { 高: 80, 中: 55, 低: 30 };
+                        const topRisks = [...report.risks]
+                          .sort((a, b) => sevOrder[b.severity] - sevOrder[a.severity])
+                          .slice(0, 2);
+                        if (topRisks.length === 1) {
+                          return `可能有${topRisks[0].type}的风险`;
+                        }
+                        return `可能有${topRisks.map((r) => `${r.type}（${probMap[r.severity]}%）`).join("、")}的风险`;
+                      })()
                     : (VERDICT_MAP[report.verdict]?.label ?? report.verdict)}
                 </div>
                 {report.verdict === "谨慎" ? (
                   <span className="text-xs text-muted-foreground">
-                    （{Math.round(100 - report.compatibilityScore)}% 概率）
+                    （{Math.round(100 - report.compatibilityScore)}% 综合风险概率）
                   </span>
                 ) : VERDICT_MAP[report.verdict]?.sub && (
                   <span className="text-xs text-muted-foreground">
