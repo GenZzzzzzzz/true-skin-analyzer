@@ -447,37 +447,47 @@ function ReportPage() {
                 className="w-full h-auto block opacity-90 mix-blend-luminosity"
                 draggable={false}
               />
-              {/* Hotspot overlay */}
-              <div className="absolute inset-0">
+              {/* Hotspot overlay — irregular blurred blobs via SVG */}
+              <svg
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <filter id="blob-blur" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="1.6" />
+                  </filter>
+                </defs>
                 {FACE_ZONES.map((z) => {
                   const v = getZoneIntensity(z, report.riskRadar);
-                  if (v < 45) return null; // 只显示需留意 / 重灾区
+                  if (v < 45) return null;
                   const isHot = v >= 70;
-                  const color = isHot
-                    ? "239,68,68" // rose-500
-                    : "251,191,36"; // amber-400
-                  const alpha = 0.35 + (v / 100) * 0.5;
-                  const sizePx = z.size * 1.7 + (v / 100) * 50;
+                  const rgb = isHot ? "239,68,68" : "251,191,36";
+                  const alpha = 0.4 + (v / 100) * 0.45;
+                  const scale = 1 + (v - 45) / 110; // 1.0 ~ 1.5
                   return (
-                    <div
+                    <g
                       key={z.id}
-                      className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                      style={{ left: `${z.x}%`, top: `${z.y}%` }}
+                      filter="url(#blob-blur)"
+                      className={isHot ? "animate-pulse" : ""}
                     >
-                      <div
-                        className={isHot ? "animate-pulse" : ""}
-                        style={{
-                          width: `${sizePx}px`,
-                          height: `${sizePx}px`,
-                          borderRadius: "9999px",
-                          background: `radial-gradient(circle, rgba(${color},${alpha}) 0%, rgba(${color},${alpha * 0.6}) 45%, transparent 75%)`,
-                          filter: "blur(4px)",
-                        }}
-                      />
-                    </div>
+                      {z.blobs.map((b, i) => (
+                        <ellipse
+                          key={i}
+                          cx={b.cx}
+                          cy={b.cy}
+                          rx={b.rx * scale}
+                          ry={b.ry * scale}
+                          transform={b.rot ? `rotate(${b.rot} ${b.cx} ${b.cy})` : undefined}
+                          fill={`rgba(${rgb},${alpha})`}
+                        />
+                      ))}
+                    </g>
                   );
                 })}
-                {/* Labels */}
+              </svg>
+              {/* Labels */}
+              <div className="absolute inset-0">
                 {FACE_ZONES.map((z) => {
                   const v = getZoneIntensity(z, report.riskRadar);
                   if (v < 45) return null;
@@ -486,7 +496,7 @@ function ReportPage() {
                     <div
                       key={`${z.id}-label`}
                       className="absolute -translate-x-1/2 pointer-events-none"
-                      style={{ left: `${z.x}%`, top: `calc(${z.y}% - 4px)` }}
+                      style={{ left: `${z.labelX}%`, top: `${z.labelY}%` }}
                     >
                       <div
                         className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur-md border ${
