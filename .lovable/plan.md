@@ -1,69 +1,73 @@
-# 报告页人脸 · 伪 3D 立体感增强
+# 报告页人脸 · 质量大幅提升（重画底图 + 多层光影）
 
-保留现在的 `face-mesh.png` 底图和 SVG 色块系统（位置/精度完全不动），通过 CSS 3D + 鼠标视差 + 多层光影，把那个区域做出"真有体积"的观感。零额外依赖、零 bundle 成本，色块定位精度与现状一致。
+在不引入 Three.js 的前提下，把那块"立体人脸"做到肉眼可感的明显升级。两条并行升级：**A）premium 重画一张影室级写实底图**；**B）在现有 Stereo3DFace 容器里加多层光影与发光优化**。色块定位精度保持不变。
 
-## 改动范围
+## 一、底图升级（premium 重画）
 
-仅 `src/routes/report.tsx` 中"面部分区示意"那一块（约 413–530 行的容器），其余报告内容、数据流、分析逻辑全部不动。
+用 `imagegen` premium 生成一张新的中性写实人脸：
+- 正面、闭眼/平视、无表情、无配饰
+- 影室级三点布光（主光左上 45°、补光右侧、轮廓光）
+- 皮肤有真实毛孔与微高光，但磨皮干净统一
+- 中性偏冷的深色背景（与现在径向渐变融合）
+- 头部居中，发际线 ≈ y8%、下巴 ≈ y92%，与现有 `FACE_ZONES` 坐标系完全对齐
+- 出图 2x 分辨率（约 1024×1280），保留细节
 
-## 具体做法
+保存为 `src/assets/face-mesh-v2.png`，替换 `report.tsx` 里的 `faceMeshImg` 引用。**保留旧文件**作为回退。
 
-**1. 容器加 3D 透视舞台**
-- 外层包一层 `perspective: 1200px` 的容器
-- 内层 `transform-style: preserve-3d`，跟随鼠标 X/Y 做轻微 `rotateX` / `rotateY`（最大 ±6°），加 `transition` 让回弹自然
-- 移动端无 hover：改为缓慢自动呼吸式倾斜（CSS keyframe，幅度更小）
+如果出图与原图轮廓位置有偏移，会用 `imagegen edit` 在原图基础上重渲质感而不改构图，保证色块仍然落在对应皮肤区。
 
-**2. 多层分层（制造景深）**
-从后到前 4 层，每层用不同 `translateZ`：
-- 背景径向渐变层（保持现在的暗色光晕）—— `translateZ(0)`
-- 人脸 PNG 主体 —— `translateZ(20px)`
-- SVG 色块层 —— `translateZ(35px)`（贴合脸部、漂浮感）
-- 标签层 —— `translateZ(60px)`（最靠近相机）
+## 二、Stereo3DFace 光影升级
 
-**3. 光影增强（让 PNG 看起来不是贴纸）**
-- 在 PNG 顶部叠一层 radial-gradient 高光（左上柔光）
-- 底部叠一层暗角 vignette
-- 整个容器加 `box-shadow` 双层：内嵌高光描边 + 外发光大柔影
-- 鼠标移动时，高光位置跟随光标移动（CSS custom property `--mx` / `--my`）
+修改 `src/components/Stereo3DFace.tsx`，在保留视差的基础上新增：
 
-**4. 色块层贴合优化**
-- 色块 SVG 加极轻 `drop-shadow(0 1px 2px rgba(0,0,0,0.4))`，让它"压"在脸上而不是浮空
-- 当前 `mix-blend-multiply` 保留
+1. **点光源高光（皮肤次表面散射感）**
+   - 当前的 `radial-gradient` 高光升级为两层：
+     - 内层：小而亮的 specular 高光（白色，半径 15%）
+     - 外层：宽柔的次表面散射（暖肉色 `oklch(0.85 0.08 30)`，半径 60%，blur）
+   - 都跟随 `--mx/--my` 移动
 
-**5. 性能与无障碍**
-- 鼠标事件用 `requestAnimationFrame` 节流
-- 监听 `prefers-reduced-motion`：开启则关闭视差与呼吸动画，仅保留静态光影
+2. **环境光遮蔽 (AO) 暗角**
+   - 容器四角加柔和暗角，让脸"陷进"舞台而不是浮在表面
+   - 用 `radial-gradient(120% 90% at 50% 50%, transparent 50%, rgba(0,0,0,0.55) 100%)` 替换现有 vignette
 
-## 技术细节
+3. **底部接触阴影**
+   - 在内层底部加一道贴地的椭圆暗影 `box-shadow` 模拟脸下方阴影
 
-```tsx
-// 伪代码示意
-const ref = useRef<HTMLDivElement>(null);
-const onMove = (e) => {
-  const r = ref.current!.getBoundingClientRect();
-  const x = (e.clientX - r.left) / r.width - 0.5;
-  const y = (e.clientY - r.top) / r.height - 0.5;
-  ref.current!.style.setProperty('--rx', `${-y * 6}deg`);
-  ref.current!.style.setProperty('--ry', `${x * 6}deg`);
-  ref.current!.style.setProperty('--mx', `${(x + 0.5) * 100}%`);
-  ref.current!.style.setProperty('--my', `${(y + 0.5) * 100}%`);
-};
-```
+4. **倾斜时的光照偏移**
+   - 鼠标在右侧时，整体亮度向左衰减 1-2%；模拟"侧光"
+   - 用一层 `linear-gradient` 跟随 `--ry` 移动
 
-样式（Tailwind + 内联 style）：
-- `style={{ perspective: '1200px' }}` 外层
-- `style={{ transform: 'rotateX(var(--rx,0)) rotateY(var(--ry,0))', transformStyle: 'preserve-3d', transition: 'transform 0.2s ease-out' }}` 内层
-- 高光覆盖层：`background: radial-gradient(circle at var(--mx,50%) var(--my,30%), rgba(255,255,255,0.12), transparent 50%)`
+5. **景深焦外**
+   - 边缘 5% 区域加轻微 blur(0.5px)，模拟相机浅景深
 
-## 不会改动
+## 三、色块层（让发光更"皮下透出来"）
 
-- `FACE_ZONES` 数据、color/强度逻辑、SVG path、clipPath 全部保持原样 → 色块定位精度与现状完全一致
-- 报告其他模块（环形分数、风险卡、雷达图等）不动
-- `face-mesh.png` 资产不替换
+在 `report.tsx` 的 SVG 色块层增强：
+- 给每个填充 path 加 SVG `<filter>` 实现 **inner glow**：
+  - `feGaussianBlur` + `feComposite in="SourceGraphic" operator="in"` → 边缘内发光
+- 整个色块组改用 `mix-blend-mode: soft-light`（替代 `multiply`），让红/黄看起来像皮下渗出而不是贴上去
+- "重灾区"色块的脉冲呼吸加大幅度（透明度 0.4 → 0.7），更醒目
+
+## 四、文件改动一览
+
+新建：
+- `src/assets/face-mesh-v2.png`（premium 重画）
+
+改写：
+- `src/components/Stereo3DFace.tsx`（多层光影 + 接触阴影 + 景深）
+- `src/routes/report.tsx`：
+  - 替换 `faceMeshImg` import 指向 v2
+  - 给色块 SVG 加 inner-glow filter，调 blend-mode
+
+不动：
+- `FACE_ZONES` 数据与坐标
+- 报告其他模块
+- 视差交互逻辑（已通过用户验收）
 
 ## 验收
 
-- 鼠标在人脸区域移动 → 整块轻微 3D 倾斜，高光跟随
-- 移动端 → 缓慢呼吸式倾斜（无 hover）
-- 系统开启 reduce-motion → 完全静态，仅保留增强后的光影
-- 色块位置与现在完全一致，不发生偏移
+- 新底图：影室级布光，皮肤质感清晰，构图与旧图等价（色块不偏）
+- 鼠标移动：高光跟随，且呈现"亮点 + 大柔光"两层，像真实皮肤反光
+- 容器：四周自然暗下去，脸看起来"嵌"在玻璃舞台里
+- 色块：从图层里"渗出"，而非贴在表面
+- 移动端 / reduce-motion：仍可正常显示静态精修效果
