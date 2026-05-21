@@ -404,7 +404,7 @@ function ReportPage() {
                 style={{
                   transform: "translateZ(28px)",
                   mixBlendMode: "multiply",
-                  opacity: 0.85,
+                  opacity: 0.95,
                 }}
               >
                 <defs>
@@ -430,9 +430,9 @@ function ReportPage() {
                     const v = getZoneIntensity(z, report.riskRadar);
                     if (v < 45) return null;
                     const isHot = v >= 70;
-                    // 偏暗的红/黄,multiply 之后呈现皮肤泛红/暗黄的真实感
-                    const rgb = isHot ? "200,70,70" : "210,150,60";
-                    const alpha = 0.45 + (v / 100) * 0.25;
+                    // 更饱和的红/黄,让颜色在 multiply 后依然明显可见
+                    const rgb = isHot ? "220,60,60" : "230,160,50";
+                    const alpha = 0.50 + (v / 100) * 0.30;
                     return (
                       <path
                         key={z.id}
@@ -452,7 +452,7 @@ function ReportPage() {
                 style={{
                   transform: "translateZ(32px)",
                   mixBlendMode: "soft-light",
-                  opacity: 0.7,
+                  opacity: 0.85,
                 }}
               >
                 <defs>
@@ -465,12 +465,12 @@ function ReportPage() {
                     const v = getZoneIntensity(z, report.riskRadar);
                     if (v < 60) return null;
                     const isHot = v >= 70;
-                    const rgb = isHot ? "255,140,120" : "255,210,130";
+                    const rgb = isHot ? "255,120,100" : "255,200,100";
                     return (
                       <path
                         key={`${z.id}-glow`}
                         d={z.path}
-                        fill={`rgba(${rgb},0.55)`}
+                        fill={`rgba(${rgb},0.65)`}
                         className={isHot ? "animate-pulse" : ""}
                       />
                     );
