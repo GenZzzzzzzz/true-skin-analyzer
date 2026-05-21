@@ -85,7 +85,7 @@ export function CaptureCard({
 
   return (
     <>
-      <div className="stereo-card group relative overflow-hidden rounded-[2rem] aspect-[3/4] sm:aspect-square">
+      <div className="stereo-card no-lift group relative overflow-hidden rounded-[2rem] aspect-[3/4] sm:aspect-square">
         {/* Top accent label */}
         <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 rounded-full border border-white/15 bg-black/40 backdrop-blur px-3 py-1 text-[10px] uppercase tracking-widest text-white/80">
           <span
@@ -110,8 +110,12 @@ export function CaptureCard({
                 <Check className="h-3.5 w-3.5" /> 已就绪
               </div>
               <button
-                onClick={onClear}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/50 backdrop-blur px-3 py-1.5 text-xs text-white hover:bg-black/70 transition-colors"
+                type="button"
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  onClear();
+                }}
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/50 backdrop-blur px-3 py-1.5 text-xs text-white hover:bg-black/70 transition-colors cursor-pointer"
               >
                 <RotateCcw className="h-3.5 w-3.5" /> 重选
               </button>
@@ -141,14 +145,24 @@ export function CaptureCard({
             </div>
             <div className="mt-6 flex gap-2">
               <button
-                onClick={openCamera}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm hover:bg-white/15 transition-colors"
+                type="button"
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  openCamera();
+                }}
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm hover:bg-white/15 transition-colors cursor-pointer active:scale-95"
               >
                 <Camera className="h-4 w-4" /> 拍摄
               </button>
               <button
-                onClick={() => fileRef.current?.click()}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-4 py-2 text-sm hover:bg-white/10 transition-colors"
+                type="button"
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  // 重置 value 以便重复选择同一文件
+                  if (fileRef.current) fileRef.current.value = "";
+                  fileRef.current?.click();
+                }}
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-4 py-2 text-sm hover:bg-white/10 transition-colors cursor-pointer active:scale-95"
               >
                 <Upload className="h-4 w-4" /> 上传
               </button>
@@ -161,9 +175,14 @@ export function CaptureCard({
           type="file"
           accept="image/*"
           className="hidden"
-          onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) onFile(f);
+            e.target.value = "";
+          }}
         />
       </div>
+
 
       {/* Camera modal */}
       {camOpen && (
