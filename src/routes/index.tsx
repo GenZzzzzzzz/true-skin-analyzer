@@ -130,10 +130,10 @@ function Home() {
             上传你的脸 + 一款产品，AI 分析是否适合
           </div>
           <h1 className="text-4xl md:text-6xl font-bold leading-[1.05] tracking-tight">
-            拍张脸，再拍下产品，<span className="text-gradient">看它适不适合你</span>
+            测测你的化妆品、防晒霜<span className="text-gradient">会不会让你爆痘、过敏</span>
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base md:text-lg text-muted-foreground">
-            上传两张照片，AI 10 秒告诉你会不会刺激、过敏或闷痘。
+            上传脸+产品照片，AI 10 秒分析致痘、刺激、泛红、脱皮等风险。
           </p>
         </div>
 
