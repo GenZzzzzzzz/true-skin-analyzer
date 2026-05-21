@@ -281,9 +281,9 @@ function ReportPage() {
                         const probMap: Record<Severity, number> = { 高: 80, 中: 55, 低: 30 };
                         const topRisks = [...report.risks]
                           .sort((a, b) => sevOrder[b.severity] - sevOrder[a.severity])
-                          .slice(1, 3);
+                          .slice(0, 2);
                         if (topRisks.length === 1) {
-                          return `可能有${topRisks[1].type}的风险`;
+                          return `可能有${topRisks[0].type}的风险`;
                         }
                         return `可能有${topRisks.map((r) => `${r.type}（${probMap[r.severity]}%）`).join("、")}的风险`;
                       })()
