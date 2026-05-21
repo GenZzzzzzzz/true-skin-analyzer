@@ -162,35 +162,31 @@ export function CaptureCard({
             <div className="mt-6 flex gap-2">
               <button
                 type="button"
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  openCamera();
-                }}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm hover:bg-white/15 transition-colors cursor-pointer active:scale-95"
+                disabled={cameraStarting}
+                onClick={openCamera}
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm hover:bg-white/15 transition-colors cursor-pointer active:scale-95 disabled:cursor-wait disabled:opacity-60"
               >
-                <Camera className="h-4 w-4" /> 拍摄
+                <Camera className="h-4 w-4" /> {cameraStarting ? "启动中" : "拍摄"}
               </button>
-              <button
-                type="button"
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  // 重置 value 以便重复选择同一文件
+              <label
+                htmlFor={fileInputId}
+                onClick={() => {
                   if (fileRef.current) fileRef.current.value = "";
-                  fileRef.current?.click();
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-4 py-2 text-sm hover:bg-white/10 transition-colors cursor-pointer active:scale-95"
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-4 py-2 text-sm hover:bg-white/10 transition-colors cursor-pointer active:scale-95"
               >
                 <Upload className="h-4 w-4" /> 上传
-              </button>
+              </label>
             </div>
           </div>
         )}
 
         <input
+          id={fileInputId}
           ref={fileRef}
           type="file"
           accept="image/*"
-          className="hidden"
+          className="sr-only"
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) onFile(f);
