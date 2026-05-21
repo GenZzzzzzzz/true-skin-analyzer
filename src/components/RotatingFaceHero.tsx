@@ -65,41 +65,44 @@ export function RotatingFaceHero() {
           }}
         />
 
-        <img
-          src={faceMeshImg}
-          alt=""
-          draggable={false}
-          className="absolute inset-0 m-auto h-full w-full object-contain select-none"
-          style={{
-            filter:
-              "drop-shadow(0 20px 40px rgba(0,0,0,0.55)) drop-shadow(0 0 30px oklch(0.78 0.15 195 / 0.35))",
-          }}
-        />
-
-        {/* Front rim light */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(60% 80% at 30% 30%, rgba(255,255,255,0.18), transparent 55%)",
-            mixBlendMode: "screen",
-          }}
-        />
-
-        {/* Scan line sweep */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
-        >
-          <div
-            className="absolute inset-x-0 h-[14%] face-scan"
+        {/* Left-half face with overlays */}
+        <div className="absolute inset-0" style={{ clipPath: "inset(0 50% 0 0)" }}>
+          <img
+            src={faceMeshImg}
+            alt=""
+            draggable={false}
+            className="absolute inset-0 m-auto h-full w-full object-contain select-none"
             style={{
-              background:
-                "linear-gradient(180deg, transparent, oklch(0.85 0.18 195 / 0.45), transparent)",
-              filter: "blur(2px)",
+              filter:
+                "drop-shadow(0 20px 40px rgba(0,0,0,0.55)) drop-shadow(0 0 30px oklch(0.78 0.15 195 / 0.35))",
             }}
           />
+
+          {/* Front rim light */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(60% 80% at 30% 30%, rgba(255,255,255,0.18), transparent 55%)",
+              mixBlendMode: "screen",
+            }}
+          />
+
+          {/* Scan line sweep */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
+          >
+            <div
+              className="absolute inset-x-0 h-[14%] face-scan"
+              style={{
+                background:
+                  "linear-gradient(180deg, transparent, oklch(0.85 0.18 195 / 0.45), transparent)",
+                filter: "blur(2px)",
+              }}
+            />
+          </div>
         </div>
       </div>
 
