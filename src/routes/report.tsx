@@ -227,6 +227,12 @@ function SkinAgeImpactCard({ impact }: { impact: SkinAgeImpact }) {
                 <div className="min-w-0">
                   <div className="text-sm font-medium">{d.factor}</div>
                   <div className="text-xs text-muted-foreground mt-0.5">{d.mechanism}</div>
+                  {d.citation && (
+                    <div className="text-[11px] text-accent/80 mt-1 flex items-center gap-1">
+                      <span className="opacity-70">🔬</span>
+                      <span className="italic">{d.citation}</span>
+                    </div>
+                  )}
                 </div>
                 <div
                   className={`shrink-0 tabular-nums text-sm font-semibold ${positive ? "text-rose-300" : "text-emerald-300"}`}

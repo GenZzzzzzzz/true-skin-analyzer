@@ -30,6 +30,7 @@ export interface SkinAgeDriver {
   factor: string;
   mechanism: string;
   contributionYears: number;
+  citation: string; // 例: "Lachenmeier 2008, Int J Environ Res Public Health"
 }
 
 export interface SkinAgeImpact {

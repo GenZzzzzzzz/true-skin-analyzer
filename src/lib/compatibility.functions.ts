@@ -38,8 +38,9 @@ H. Skin Age Impact (skinAgeImpact)：假设用户每日规律使用本产品 12 
    * 钳制到 [-2.0, +5.0]，保留 1 位小数
    * direction：years>+0.3 → aging；-0.3..+0.3 → neutral；<-0.3 → rejuvenating
    * confidence：成分清单完整且与肤质特征对应充分 → 高；部分识别 → 中；识别度低 → 低
-   * drivers：列出贡献最大的 2-4 项 (factor=成分或组合, mechanism=简短机制, contributionYears=带符号年数)，其和≈years
-   * caveat：固定写"基于成分-肤质再生生物学映射的估算模型，不构成医学诊断。"
+   * drivers：列出贡献最大的 2-4 项 (factor=成分或组合, mechanism=简短机制, contributionYears=带符号年数, citation=该机制的代表性文献引用)，其和≈years
+   * citation 格式："第一作者姓 + 年份, 期刊缩写"，如 "Lachenmeier 2008, Int J Environ Res Public Health" 或 "Draelos 2018, J Cosmet Dermatol"。优先引用该成分/机制经典文献；若不确定具体文献，给出该领域公认综述年份与期刊，不要写 "N/A"。
+   * caveat：固定写"基于成分-肤质再生生物学映射的估算模型，引用为机制示意而非该产品的直接临床试验，不构成医学诊断。"
    horizon 固定为 "12_months"。
 
 必须通过 submit_compatibility 工具返回结构化结果。同样输入必须产生同样输出。`;
@@ -125,8 +126,9 @@ const TOOL_SCHEMA = {
                   factor: { type: "string", description: "成分或成分组合名" },
                   mechanism: { type: "string", description: "简短再生生物学机制" },
                   contributionYears: { type: "number" },
+                  citation: { type: "string", description: "代表性文献引用：第一作者姓+年份, 期刊缩写" },
                 },
-                required: ["factor", "mechanism", "contributionYears"],
+                required: ["factor", "mechanism", "contributionYears", "citation"],
                 additionalProperties: false,
               },
             },
