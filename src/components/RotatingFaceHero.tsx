@@ -27,7 +27,7 @@ const PRODUCTS: Product[] = [
     name: "Hyaluronic Serum",
     // Forehead T-zone (yellow) + nose bridge (red)
     zones: [
-      { top: "8%", left: "16%", width: "68%", height: "22%", tone: "yellow" },
+      { top: "4%", left: "12%", width: "76%", height: "28%", tone: "yellow" },
       { top: "52%", left: "42%", width: "16%", height: "12%", tone: "red" },
     ],
   },
@@ -36,7 +36,7 @@ const PRODUCTS: Product[] = [
     name: "Protective Day Cream",
     // Upper forehead (yellow) + left cheek (yellow)
     zones: [
-      { top: "6%", left: "18%", width: "64%", height: "20%", tone: "yellow" },
+      { top: "4%", left: "14%", width: "72%", height: "26%", tone: "yellow" },
       { top: "54%", left: "10%", width: "22%", height: "16%", tone: "yellow" },
     ],
   },
@@ -64,7 +64,7 @@ const PRODUCTS: Product[] = [
     name: "Face Cream",
     // Forehead (yellow) + jawline (yellow)
     zones: [
-      { top: "8%", left: "16%", width: "68%", height: "22%", tone: "yellow" },
+      { top: "4%", left: "12%", width: "76%", height: "28%", tone: "yellow" },
       { top: "82%", left: "26%", width: "44%", height: "12%", tone: "yellow" },
     ],
   },
@@ -111,24 +111,46 @@ export function RotatingFaceHero() {
 
         {/* Risk zones overlay — fades when product changes */}
         <div key={active} className="absolute inset-0 zone-fade-in">
-          {product.zones.map((z, i) => (
-            <div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                top: z.top,
-                left: z.left,
-                width: z.width,
-                height: z.height,
-                background:
-                  z.tone === "red"
-                    ? "radial-gradient(ellipse, oklch(0.7 0.25 25 / 0.78), oklch(0.7 0.25 25 / 0) 70%)"
-                    : "radial-gradient(ellipse, oklch(0.85 0.18 85 / 0.78), oklch(0.85 0.18 85 / 0) 70%)",
-                filter: "blur(6px)",
-                mixBlendMode: "screen",
-              }}
-            />
-          ))}
+          {product.zones.map((z, i) => {
+            const ring =
+              z.tone === "red"
+                ? "oklch(0.7 0.25 25 / 0.9)"
+                : "oklch(0.85 0.18 85 / 0.95)";
+            const fill =
+              z.tone === "red"
+                ? "radial-gradient(ellipse, oklch(0.7 0.25 25 / 0.85), oklch(0.7 0.25 25 / 0) 72%)"
+                : "radial-gradient(ellipse, oklch(0.85 0.18 85 / 0.85), oklch(0.85 0.18 85 / 0) 72%)";
+            return (
+              <div
+                key={i}
+                className="absolute"
+                style={{
+                  top: z.top,
+                  left: z.left,
+                  width: z.width,
+                  height: z.height,
+                }}
+              >
+                {/* Soft glow fill */}
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: fill,
+                    filter: "blur(5px)",
+                    mixBlendMode: "screen",
+                  }}
+                />
+                {/* Crisp outline */}
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    border: `1.5px solid ${ring}`,
+                    boxShadow: `0 0 8px ${ring}`,
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 
