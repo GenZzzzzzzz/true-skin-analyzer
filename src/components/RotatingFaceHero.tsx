@@ -93,7 +93,7 @@ export function RotatingFaceHero() {
       <div
         className="relative"
         style={{
-          width: "min(620px, 86vw)",
+          width: "min(420px, 70vw)",
           aspectRatio: "632 / 848",
         }}
       >
@@ -195,7 +195,7 @@ function FilmStrip({
       />
 
       {/* Frames track */}
-      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 overflow-hidden" style={{ width: 96 }}>
+      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 overflow-hidden" style={{ width: 80 }}>
         <div
           className="absolute left-0 right-0 transition-transform duration-700"
           style={{
