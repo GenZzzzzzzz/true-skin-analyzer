@@ -417,25 +417,22 @@ function ReportPage() {
                 className="w-full h-auto block opacity-95 grayscale"
                 draggable={false}
               />
-              {/* Hotspot overlay — irregular blurred blobs via SVG */}
+              {/* Hotspot overlay — 基于面部分割的精细轮廓 */}
               <svg
                 className="absolute inset-0 w-full h-full pointer-events-none mix-blend-multiply"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
               >
                 <defs>
-                  <filter id="blob-blur" x="-30%" y="-30%" width="160%" height="160%">
-                    <feGaussianBlur stdDeviation="0.6" />
+                  <filter id="blob-blur" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="0.35" />
                   </filter>
-                  {/* 面部轮廓裁剪 —— 把高亮限制在皮肤区域内 */}
                   <clipPath id="face-skin" clipPathUnits="userSpaceOnUse">
-                    {/* 正面脸（左侧头像） */}
                     <polygon points="
                       27,14 33,15 38,18 41,24 42,32 43,42 42,52
                       40,62 37,72 33,82 29,90 25,92 21,90 17,82
                       14,72 12,62 11,52 11,42 12,32 14,24 18,18 22,15
                     " />
-                    {/* 3/4 侧面脸（右侧头像）—— 主要覆盖太阳穴 / 下颌线 / 脸颊 */}
                     <polygon points="
                       72,14 78,15 83,19 86,26 88,35 89,46 88,56
                       86,66 83,75 79,84 74,90 68,90 64,86 62,78
@@ -449,25 +446,25 @@ function ReportPage() {
                     if (v < 45) return null;
                     const isHot = v >= 70;
                     const rgb = isHot ? "239,68,68" : "251,191,36";
-                    const alpha = 0.78 + (v / 100) * 0.18;
-                    const scale = 1 + (v - 45) / 110;
+                    const fillAlpha = 0.72 + (v / 100) * 0.2;
+                    const strokeAlpha = isHot ? 0.95 : 0.85;
                     return (
-                      <g
-                        key={z.id}
-                        filter="url(#blob-blur)"
-                        className={isHot ? "animate-pulse" : ""}
-                      >
-                        {z.blobs.map((b, i) => (
-                          <ellipse
-                            key={i}
-                            cx={b.cx}
-                            cy={b.cy}
-                            rx={b.rx * scale}
-                            ry={b.ry * scale}
-                            transform={b.rot ? `rotate(${b.rot} ${b.cx} ${b.cy})` : undefined}
-                            fill={`rgba(${rgb},${alpha})`}
-                          />
-                        ))}
+                      <g key={z.id} className={isHot ? "animate-pulse" : ""}>
+                        {/* 填充层 —— 轻微模糊使边缘更自然 */}
+                        <path
+                          d={z.path}
+                          fill={`rgba(${rgb},${fillAlpha})`}
+                          filter="url(#blob-blur)"
+                        />
+                        {/* 描边层 —— 勾勒分割轮廓 */}
+                        <path
+                          d={z.path}
+                          fill="none"
+                          stroke={`rgba(${rgb},${strokeAlpha})`}
+                          strokeWidth={0.4}
+                          strokeLinejoin="round"
+                          vectorEffect="non-scaling-stroke"
+                        />
                       </g>
                     );
                   })}
