@@ -455,7 +455,7 @@ function ReportPage() {
               >
                 <defs>
                   <filter id="blob-blur" x="-30%" y="-30%" width="160%" height="160%">
-                    <feGaussianBlur stdDeviation="1.6" />
+                    <feGaussianBlur stdDeviation="0.9" />
                   </filter>
                 </defs>
                 {FACE_ZONES.map((z) => {
