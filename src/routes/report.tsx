@@ -364,32 +364,6 @@ function ReportPage() {
           </div>
         </div>
 
-        {/* Risk radar */}
-        <div className="mt-6 stereo-card rounded-3xl p-6 md:p-8">
-          <h2 className="font-display text-xl font-semibold">风险维度雷达</h2>
-          <div className="text-xs text-muted-foreground mt-1">数值越高 = 风险越大</div>
-          <div className="h-[320px] mt-4">
-            <ClientOnly fallback={<div className="h-full w-full animate-pulse rounded-2xl bg-muted/30" />}>
-              <ResponsiveContainer width="100%" height="100%">
-                <RadarChart data={radarData}>
-                  <PolarGrid stroke="var(--border)" />
-                  <PolarAngleAxis
-                    dataKey="subject"
-                    tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                  />
-                  <Radar
-                    name="风险"
-                    dataKey="A"
-                    stroke="oklch(0.7 0.22 25)"
-                    fill="oklch(0.7 0.22 25)"
-                    fillOpacity={0.25}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
-            </ClientOnly>
-          </div>
-        </div>
-
         {/* Face hotspot map */}
         <div className="mt-6 stereo-card rounded-3xl p-6 md:p-8 overflow-hidden">
           <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -558,6 +532,32 @@ function ReportPage() {
                   );
                 })}
             </div>
+          </div>
+        </div>
+
+        {/* Risk radar */}
+        <div className="mt-6 stereo-card rounded-3xl p-6 md:p-8">
+          <h2 className="font-display text-xl font-semibold">风险维度雷达</h2>
+          <div className="text-xs text-muted-foreground mt-1">数值越高 = 风险越大</div>
+          <div className="h-[320px] mt-4">
+            <ClientOnly fallback={<div className="h-full w-full animate-pulse rounded-2xl bg-muted/30" />}>
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={radarData}>
+                  <PolarGrid stroke="var(--border)" />
+                  <PolarAngleAxis
+                    dataKey="subject"
+                    tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                  />
+                  <Radar
+                    name="风险"
+                    dataKey="A"
+                    stroke="oklch(0.7 0.22 25)"
+                    fill="oklch(0.7 0.22 25)"
+                    fillOpacity={0.25}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </ClientOnly>
           </div>
         </div>
 
