@@ -12,9 +12,50 @@ import { SiteHeader } from "@/components/SiteHeader";
 import {
   type CompatibilityReport,
   RISK_RADAR_LABELS,
+  type RiskRadar,
   type Severity,
   type Verdict,
 } from "@/lib/compatibility-types";
+import faceMeshImg from "@/assets/face-mesh.png";
+
+// 面部分区 → 在 wireframe 图上的相对位置 (%)，以及该分区主要受哪些风险影响
+type FaceZone = {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  size: number; // hotspot 基础半径 (px on 1x)
+  drivers: Array<keyof RiskRadar>;
+  hint: string;
+};
+
+const FACE_ZONES: FaceZone[] = [
+  { id: "forehead", label: "额头 · T 区", x: 22, y: 17, size: 56, drivers: ["oiliness", "comedogenic"], hint: "出油 / 闭口高发区" },
+  { id: "nose", label: "鼻翼 · 黑头区", x: 22, y: 47, size: 42, drivers: ["oiliness", "comedogenic", "irritation"], hint: "黑头、毛孔粗大" },
+  { id: "eye", label: "眼周", x: 29, y: 31, size: 38, drivers: ["allergy", "irritation", "dryness"], hint: "皮肤最薄，易刺痛 / 过敏" },
+  { id: "left-cheek", label: "左颊", x: 11, y: 52, size: 50, drivers: ["dryness", "irritation", "photo"], hint: "干燥 / 泛红 / 晒伤区" },
+  { id: "right-cheek", label: "右颊", x: 33, y: 52, size: 50, drivers: ["dryness", "irritation", "photo"], hint: "干燥 / 泛红 / 晒伤区" },
+  { id: "chin", label: "下巴", x: 22, y: 76, size: 46, drivers: ["comedogenic", "oiliness"], hint: "周期性闷痘高发区" },
+  { id: "jaw-side", label: "下颌线", x: 72, y: 74, size: 48, drivers: ["comedogenic", "irritation"], hint: "闷痘 / 摩擦刺激" },
+  { id: "temple", label: "太阳穴", x: 62, y: 28, size: 40, drivers: ["photo", "dryness"], hint: "易晒伤 / 干纹" },
+];
+
+function getZoneIntensity(zone: FaceZone, radar: RiskRadar): number {
+  // 取该分区主要驱动维度的最大值作为强度
+  let max = 0;
+  for (const k of zone.drivers) {
+    const v = radar[k] ?? 0;
+    if (v > max) max = v;
+  }
+  return max; // 0-100
+}
+
+function intensityLabel(v: number): { text: string; color: string } {
+  if (v >= 70) return { text: "重灾区", color: "text-rose-300" };
+  if (v >= 45) return { text: "需留意", color: "text-amber-300" };
+  if (v >= 25) return { text: "轻微", color: "text-emerald-300" };
+  return { text: "安全", color: "text-muted-foreground" };
+}
 
 const VERDICT_MAP: Record<Verdict, { label: string; sub: string }> = {
   推荐: { label: "放心用", sub: "" },
