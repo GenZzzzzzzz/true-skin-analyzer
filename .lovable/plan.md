@@ -1,90 +1,135 @@
-# AI 肤质分析 SaaS — MVP 实施方案
+# 全新方向：皮肤 × 产品 适配度分析
 
-## 产品形态
-一个网页应用：用户上传或拍摄面部照片 → 系统做基础图像增强 → 调用 Gemini Vision 多模态模型分析 8 项肤质指标 → 输出可视化报告。**首版不做账号系统、付费、历史记录**，专注核心分析体验。
-
-## 核心流程
-
-```text
-[首页/落地]
-   ↓ 点击"开始分析"
-[拍摄/上传页]
-   ├─ 摄像头实时拍摄（getUserMedia）
-   └─ 上传本地照片（拖拽 / 选择文件）
-   ↓
-[图像预处理（前端）]
-   ├─ 自动裁剪人脸区域（FaceDetector API / 兜底中心裁剪）
-   ├─ 白平衡 / 亮度归一化（Canvas 滤镜）
-   └─ 压缩到 ~1024px JPG
-   ↓
-[后端 Server Function]
-   └─ 调用 Lovable AI Gateway（google/gemini-2.5-pro，多模态）
-       用结构化 tool-calling 返回 8 项指标评分 + 文字解读
-   ↓
-[报告页]
-   ├─ 综合肤质类型 + 总分
-   ├─ 8 项指标雷达图 + 进度条
-   ├─ 每项的"现状 / 成因 / 护理建议"
-   └─ 可保存为图片 / 复制链接（无账号场景下基于本地）
-```
-
-## 8 项肤质指标（与你列的清单一致）
-1. 油脂分布（T 区/额头/鼻/下巴）
-2. 干燥/缺水
-3. 敏感/红血丝
-4. 毛孔状态
-5. 痘痘/粉刺
-6. 肤色均匀度
-7. 皱纹/细纹
-8. 综合肤质类型（干/油/混/敏感）
-
-每项返回：`score (0-100)`、`level (优/良/一般/差)`、`findings (文字)`、`recommendations (3 条建议)`。
-
-## 页面清单（TanStack Start 路由）
-
-| 路径 | 文件 | 内容 |
-|---|---|---|
-| `/` | `src/routes/index.tsx` | Hero + 特性介绍 + CTA "开始分析" |
-| `/analyze` | `src/routes/analyze.tsx` | 拍摄/上传 + 拍摄指引（光线、角度、距离） |
-| `/report` | `src/routes/report.tsx` | 分析结果报告页（结果通过 sessionStorage 传递） |
-| `/api/analyze-skin` | `src/routes/api/analyze-skin.ts`（备用，主路径走 server function） | — |
-
-主分析逻辑放在 `src/lib/skin.functions.ts` 的 `createServerFn` 中。
-
-## 设计方向（科技/极简）
-
-- **配色**：深色主背景 `oklch(0.18 0.02 260)` + 高对比白文字 + 单一冷色强调（青绿 `oklch(0.78 0.15 195)`），数据图表用渐变线条
-- **字体**：标题 Space Grotesk，正文 Inter
-- **质感**：大量留白、细边框、毛玻璃卡片、score 数字超大号、轻微 motion（结果数字从 0 滚动到目标值，雷达图描边动画）
-- **图标**：Lucide 单色细线
-- **拍摄页**：黑色满屏 + 中央人脸取景框 + 顶部光线检测提示
-
-所有色彩走 `src/styles.css` 的 oklch 设计 token，组件层只用语义 class。
-
-## 技术决策
-
-- **AI**：Lovable AI Gateway，模型 `google/gemini-2.5-pro`（多模态、推理强）；用 tool-calling 强制结构化输出，避免解析 JSON 字符串
-- **图像增强**：前端 Canvas 处理（白平衡 + 亮度归一化 + 裁剪），不在 MVP 阶段引入 ESRGAN 超分（需 GPU 推理服务，超出 Lovable 范围）
-- **后端**：TanStack Start `createServerFn`，不需要 Lovable Cloud（无数据库/账号需求）
-- **LOVABLE_API_KEY**：自动配置，无需用户输入
-
-## 风险与说明
-
-1. **精度边界**：Gemini Vision 通用模型对肤质细节（毛孔级别）做的是"视觉评估"，不是医疗级诊断。报告页会标注"仅供参考，不作为医学诊断"。
-2. **若需要医疗级精度**：未来需接入专业 API（Perfect Corp / Haut.AI）或自部署 U-Net / ESRGAN 模型——这些需要 GPU 推理服务，不在 Lovable 平台内能完成，需另起后端。
-3. **拍摄环境**：分析准确度高度依赖光线，因此拍摄页提供明确指引（自然光、正面、无滤镜）。
-
-## 实施分步
-
-1. 建立设计 token（深色科技风 oklch 色板 + Space Grotesk/Inter 字体引入）
-2. 首页 `/`：Hero + 8 项指标特性介绍 + CTA
-3. 拍摄页 `/analyze`：摄像头组件 + 上传组件 + 拍摄指引
-4. 前端图像预处理工具（`src/lib/image-preprocess.ts`）
-5. Server function `analyzeSkin`（`src/lib/skin.functions.ts`）调用 Gemini，tool-calling 返回 8 项指标
-6. 报告页 `/report`：雷达图（Recharts）、指标卡片、建议清单
-7. 加载/错误/重试态、隐私声明
-8. SEO（每页独立 title/description/og）+ `llms.txt`
+把当前"AI 肤质分析"产品转型为：**用户同时上传一张自己的脸 + 一张化妆品/防晒/护肤品照片，AI 判断这款产品对该用户皮肤的适配度（刺激、过敏、闷痘、油皮闷感等风险）**。整套页面按苹果科技感重做：立体感、深色玻璃、柔和高光、流体阴影、微动效。
 
 ---
 
-**确认后我开始实施。** 实施过程预计中等规模，主要工作集中在拍摄/上传 UX、Gemini 提示词工程和报告页可视化。
+## 一、新主页（`/`）
+
+主体只保留两个并排的"相机卡"，居中、巨大、立体。
+
+```text
+       SkinMatch · AI 适配度
+   ────────────────────────────────
+   ┌──────────┐      ┌──────────┐
+   │  📷 你   │      │  📷 产品 │
+   │ 拍/上传  │      │ 拍/上传  │
+   │   脸     │      │ 化妆品   │
+   └──────────┘      └──────────┘
+            [ 分析适配度 → ]   (两张都有才点亮)
+        免责声明 · 不替代医学建议
+```
+
+- 左卡：拍/上传**自拍**（沿用现有 `preprocessImage` 多分区流水线）
+- 右卡：拍/上传**产品**（瓶身正面，看清成分表更佳）
+- 下方一个大号 CTA "分析适配度"，只有两张图都就绪才会亮起+发光
+- 顶部一个极简 logo + 一行 tagline，底部一句免责声明
+- 不再有特性介绍区、教程区——主页就是个工作台
+
+### 视觉语言（苹果科技感）
+- 深色基底 `oklch(0.14 0.02 260)`，加上极轻的环境光渐变
+- 两张"相机卡"使用立体感处理：
+  - 多层阴影（顶部柔光高光 + 底部深阴影 + 外发光）
+  - 内嵌玻璃面（`backdrop-filter: blur` + 1px 高光描边）
+  - 悬停时整卡轻微 3D 倾斜（CSS transform + perspective）
+  - 已上传后卡内呈现照片缩略 + 一个再拍按钮
+- 主 CTA：胶囊形、青绿光晕、按下时缩放反馈
+- 字体延用 Space Grotesk / Inter，标题加大字重
+
+---
+
+## 二、拍摄/上传交互
+
+两张卡共用同一个"拍摄/上传"组件，但区分：
+
+| 类型 | 取景框形状 | 提示文案 | 预处理 |
+|---|---|---|---|
+| 脸 | 椭圆人脸框 | "正面、自然光、无滤镜" | 现有 face-landmarks + retinex + 多分区 |
+| 产品 | 矩形产品框 | "对准瓶身正面，让成分表清晰" | 仅缩放+JPEG，无需对齐 |
+
+点击卡片 → 弹出底部抽屉（drawer）选择"拍摄 / 从相册上传"，不再像现在跳到独立路由。整个上传都在主页完成。
+
+---
+
+## 三、分析流程
+
+`/analyze` 路由取消（或重定向回 `/`）。点击主 CTA 后：
+
+1. 在主页上方覆盖一个全屏的"分析中"层（立体玻璃、跑动光线、进度文字）
+2. 调用新的 server function `analyzeCompatibility`：
+   - 入参：脸的多分区图（沿用现有 zones） + 产品图（base64）
+   - 模型：`google/gemini-2.5-flash`
+   - tool-calling 输出结构化结果（schema 见下）
+3. 完成后跳转 `/report`
+
+### 新 server function `analyzeCompatibility`
+- 复用现有 `LovableAIClient` 调用方式
+- Prompt 让模型先识别产品（品类、关键成分），再结合脸部多分区肤质特征评估
+- 返回 JSON：
+
+```ts
+{
+  product: { name, category, keyIngredients: string[] },
+  skinSnapshot: { type, topConcerns: string[] },
+  compatibilityScore: number,         // 0-100 适配度
+  verdict: "推荐" | "谨慎" | "不推荐",
+  risks: Array<{
+    type: "刺激" | "过敏" | "闷痘" | "干燥加重" | "油光" | "光敏" | "其他",
+    severity: "低" | "中" | "高",
+    reason: string,                   // 哪些成分 × 哪个肤质特征导致
+  }>,
+  benefits: string[],
+  usageTips: string[],                // 用法、频率、配伍
+  alternatives?: string[],            // 若不推荐，给替代成分方向
+}
+```
+
+---
+
+## 四、新报告页（`/report`）
+
+立体卡片化布局：
+
+- 顶部巨型"适配度环形分数"（带柔光、数字滚动动画）+ verdict 徽章
+- 两张并排小卡：左"你的皮肤画像"（型 + Top 3 关注点）/ 右"识别到的产品"（品类 + 关键成分 chip）
+- "风险" 折叠卡组：每条带颜色严重度条 + 成因解释
+- "潜在好处" / "使用建议" 两栏
+- 底部 CTA："换一款再测" → 回主页
+
+雷达图改为"风险维度雷达"（刺激/过敏/闷痘/干燥/光敏/油感），样式延用现有 Recharts。
+
+---
+
+## 五、文件改动一览
+
+新增：
+- `src/components/CameraCard.tsx`：通用立体相机卡（props: kind="face"|"product"）
+- `src/components/UploadDrawer.tsx`：底部抽屉
+- `src/lib/compatibility.functions.ts`：`analyzeCompatibility` server fn
+- `src/lib/compatibility-types.ts`：上面那个返回 schema 的 TS 类型
+
+改写：
+- `src/routes/index.tsx`：新双相机主页
+- `src/routes/report.tsx`：新适配度报告布局
+- `src/styles.css`：新增立体阴影、玻璃高光、CTA 发光等工具类
+- `src/components/SiteHeader.tsx`：简化为 logo + 副标题
+
+保留但不再作为入口：
+- `src/lib/image-preprocess.ts`（脸部分区流水线照用）
+- `src/lib/face-landmarks.ts`
+- `src/lib/skin.functions.ts`（保留导出，但主流程改走 compatibility）
+
+弃用：
+- `src/routes/analyze.tsx`：删除或改为 redirect 到 `/`
+- 原 `SkinReport` 8 项指标 UI（被适配度模型取代）
+
+---
+
+## 六、需要先确认的两个小点
+
+1. 产品识别错误（拍到的不是化妆品/无法识别成分）时的策略：
+   - A：仍然给一个"信息不足"的报告，提示重拍
+   - B：直接弹错误，要求重新上传产品图
+2. 报告页是否保留原"肤质 8 项指标"小节作为附加信息？还是完全聚焦"适配度"，不展示通用肤质评分？
+
+我会按 **A + 完全聚焦适配度** 默认实施，如有偏好告诉我。
