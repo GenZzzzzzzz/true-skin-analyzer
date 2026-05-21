@@ -88,15 +88,18 @@ const PRODUCTS: Product[] = [
  * /report page so the homepage matches our reporting visual language.
  */
 export function RotatingFaceHero() {
-  const [active, setActive] = useState(0);
+  // `tick` is a monotonically increasing counter so the film strip keeps
+  // sliding downward continuously instead of snapping back to the top.
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     const t = setInterval(() => {
-      setActive((i) => (i + 1) % PRODUCTS.length);
+      setTick((i) => i + 1);
     }, 2600);
     return () => clearInterval(t);
   }, []);
 
+  const active = ((tick % PRODUCTS.length) + PRODUCTS.length) % PRODUCTS.length;
   const product = PRODUCTS[active];
 
   return (
