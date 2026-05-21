@@ -314,6 +314,11 @@ function ReportPage() {
           </div>
         </div>
 
+        {/* Skin Age Impact — Regenerative Bio hero number */}
+        {report.skinAgeImpact && <SkinAgeImpactCard impact={report.skinAgeImpact} />}
+
+
+
         {/* Two cards: skin + product */}
         <div className="mt-6 grid gap-5 md:grid-cols-2">
           <div className="stereo-card rounded-2xl p-6">
