@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Camera, Upload, RotateCcw, X, Check } from "lucide-react";
 
 interface Props {
@@ -22,19 +22,41 @@ export function CaptureCard({
 }: Props) {
   const [camOpen, setCamOpen] = useState(false);
   const [camError, setCamError] = useState<string | null>(null);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraStarting, setCameraStarting] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const fileInputId = useId();
 
   useEffect(() => () => stopCamera(), []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!camOpen || !video || !cameraStream) return;
+
+    video.srcObject = cameraStream;
+    void video.play().catch(() => {
+      setCamError("摄像头启动失败，请改用上传");
+      setCameraStarting(false);
+    });
+  }, [camOpen, cameraStream]);
 
   function stopCamera() {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    setCameraStream(null);
+    setCameraStarting(false);
+    setCameraReady(false);
   }
 
   async function openCamera() {
+    if (cameraStarting) return;
     setCamError(null);
+    setCameraReady(false);
+    setCameraStarting(true);
+    setCamOpen(true);
     try {
       const facingMode = kind === "face" ? "user" : "environment";
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -42,16 +64,10 @@ export function CaptureCard({
         audio: false,
       });
       streamRef.current = stream;
-      setCamOpen(true);
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(() => {});
-        }
-      }, 50);
+      setCameraStream(stream);
     } catch {
       setCamError("无法访问摄像头，请改用上传");
-      setCamOpen(true);
+      setCameraStarting(false);
     }
   }
 
@@ -62,7 +78,7 @@ export function CaptureCard({
 
   function snap() {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || !cameraReady || !v.videoWidth || !v.videoHeight) return;
     const c = document.createElement("canvas");
     c.width = v.videoWidth;
     c.height = v.videoHeight;
@@ -146,35 +162,31 @@ export function CaptureCard({
             <div className="mt-6 flex gap-2">
               <button
                 type="button"
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  openCamera();
-                }}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm hover:bg-white/15 transition-colors cursor-pointer active:scale-95"
+                disabled={cameraStarting}
+                onClick={openCamera}
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm hover:bg-white/15 transition-colors cursor-pointer active:scale-95 disabled:cursor-wait disabled:opacity-60"
               >
-                <Camera className="h-4 w-4" /> 拍摄
+                <Camera className="h-4 w-4" /> {cameraStarting ? "启动中" : "拍摄"}
               </button>
-              <button
-                type="button"
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  // 重置 value 以便重复选择同一文件
+              <label
+                htmlFor={fileInputId}
+                onClick={() => {
                   if (fileRef.current) fileRef.current.value = "";
-                  fileRef.current?.click();
                 }}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-4 py-2 text-sm hover:bg-white/10 transition-colors cursor-pointer active:scale-95"
+                className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-white/5 border border-white/10 px-4 py-2 text-sm hover:bg-white/10 transition-colors cursor-pointer active:scale-95"
               >
                 <Upload className="h-4 w-4" /> 上传
-              </button>
+              </label>
             </div>
           </div>
         )}
 
         <input
+          id={fileInputId}
           ref={fileRef}
           type="file"
           accept="image/*"
-          className="hidden"
+          className="sr-only"
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) onFile(f);
@@ -225,6 +237,10 @@ export function CaptureCard({
                     className="h-full w-full object-cover"
                     playsInline
                     muted
+                    onLoadedMetadata={() => {
+                      setCameraReady(true);
+                      setCameraStarting(false);
+                    }}
                   />
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                     {kind === "face" ? (
@@ -254,9 +270,10 @@ export function CaptureCard({
                   </button>
                   <button
                     onClick={snap}
-                    className="rounded-full bg-accent px-6 py-2.5 font-medium text-accent-foreground"
+                    disabled={!cameraReady}
+                    className="rounded-full bg-accent px-6 py-2.5 font-medium text-accent-foreground disabled:cursor-wait disabled:opacity-60"
                   >
-                    拍摄
+                    {cameraReady ? "拍摄" : "准备中"}
                   </button>
                 </div>
               </>
