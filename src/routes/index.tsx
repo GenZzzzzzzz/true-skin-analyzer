@@ -1,145 +1,233 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Droplet, AlertCircle, Sparkles, Scan, Activity, Sun, Layers } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useRef, useState } from "react";
+import { Loader2, Sparkles, ShieldCheck } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
+import { CaptureCard } from "@/components/CaptureCard";
+import { preprocessImage } from "@/lib/image-preprocess";
+import { preprocessProduct } from "@/lib/product-preprocess";
+import { analyzeCompatibility } from "@/lib/compatibility.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SkinSense — AI 肤质精准分析" },
-      { name: "description", content: "拍一张脸，AI 即时分析 7 项肤质指标，给你专属护肤建议。" },
-      { property: "og:title", content: "SkinSense — AI 肤质精准分析" },
-      { property: "og:description", content: "拍一张脸，AI 即时分析 7 项肤质指标。" },
+      { title: "SkinMatch — AI 化妆品 × 肤质适配度" },
+      {
+        name: "description",
+        content: "拍一张脸 + 一张化妆品，AI 即时分析这款产品对你皮肤的适配度与潜在风险。",
+      },
+      { property: "og:title", content: "SkinMatch — AI 适配度分析" },
+      {
+        property: "og:description",
+        content: "拍一张脸 + 一张化妆品，AI 即时分析适配度。",
+      },
     ],
   }),
   component: Home,
 });
 
-const features = [
-  { icon: Droplet, title: "油脂分布", desc: "T 区、额头、鼻、下巴油光检测" },
-  { icon: Sun, title: "干燥/缺水", desc: "面颊、眼周干纹、紧绷度评估" },
-  { icon: AlertCircle, title: "敏感/红血丝", desc: "局部红斑与血丝识别" },
-  { icon: Scan, title: "毛孔状态", desc: "粗大、堵塞情况" },
-  { icon: Activity, title: "痘痘/粉刺", desc: "黑头、白头、炎症痘检测" },
-  { icon: Layers, title: "肤色均匀度", desc: "暗沉、色斑、雀斑分布" },
-  { icon: Sparkles, title: "皱纹/细纹", desc: "年龄相关纹理分析" },
-];
+type Stage = "idle" | "preprocessing" | "analyzing";
 
 function Home() {
+  const navigate = useNavigate();
+  const analyze = useServerFn(analyzeCompatibility);
+
+  const [faceBlob, setFaceBlob] = useState<Blob | null>(null);
+  const [facePreview, setFacePreview] = useState<string | null>(null);
+  const [productBlob, setProductBlob] = useState<Blob | null>(null);
+  const [productPreview, setProductPreview] = useState<string | null>(null);
+
+  const [stage, setStage] = useState<Stage>("idle");
+  const [error, setError] = useState<string | null>(null);
+  const objectUrls = useRef<string[]>([]);
+
+  useEffect(
+    () => () => {
+      objectUrls.current.forEach((u) => URL.revokeObjectURL(u));
+    },
+    [],
+  );
+
+  function setFace(b: Blob) {
+    setFaceBlob(b);
+    const u = URL.createObjectURL(b);
+    objectUrls.current.push(u);
+    setFacePreview(u);
+    setError(null);
+  }
+  function setProduct(b: Blob) {
+    setProductBlob(b);
+    const u = URL.createObjectURL(b);
+    objectUrls.current.push(u);
+    setProductPreview(u);
+    setError(null);
+  }
+
+  const ready = !!faceBlob && !!productBlob && stage === "idle";
+
+  async function submit() {
+    if (!faceBlob || !productBlob) return;
+    setError(null);
+    setStage("preprocessing");
+    try {
+      const [faceResult, productResult] = await Promise.all([
+        preprocessImage(faceBlob),
+        preprocessProduct(productBlob),
+      ]);
+      setStage("analyzing");
+      const res = await analyze({
+        data: {
+          zones: faceResult.zones,
+          productBase64: productResult.base64,
+          faceDetected: faceResult.faceDetected,
+        },
+      });
+      if (!res.report) {
+        setError(res.error || "分析失败");
+        setStage("idle");
+        return;
+      }
+      try {
+        sessionStorage.setItem("compat-report", JSON.stringify(res.report));
+        sessionStorage.setItem("face-photo", faceResult.previewDataUrl);
+        sessionStorage.setItem("product-photo", productResult.previewDataUrl);
+      } catch {}
+      navigate({ to: "/report" });
+    } catch (e) {
+      console.error(e);
+      setError("处理失败，请换一张照片重试");
+      setStage("idle");
+    }
+  }
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Ambient lighting */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div
+          className="absolute left-[-10%] top-[-10%] h-[600px] w-[600px] rounded-full blur-3xl opacity-60"
+          style={{
+            background:
+              "radial-gradient(circle, oklch(0.78 0.15 195 / 0.35), transparent 65%)",
+          }}
+        />
+        <div
+          className="absolute right-[-10%] top-[10%] h-[500px] w-[500px] rounded-full blur-3xl opacity-50"
+          style={{
+            background:
+              "radial-gradient(circle, oklch(0.7 0.22 320 / 0.3), transparent 65%)",
+          }}
+        />
+      </div>
+
       <SiteHeader />
 
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div
-            className="absolute left-1/2 top-0 h-[600px] w-[900px] -translate-x-1/2 rounded-full blur-3xl"
-            style={{ background: "radial-gradient(circle, oklch(0.78 0.15 195 / 0.25), transparent 60%)" }}
+      <main className="mx-auto max-w-6xl px-6 pt-12 pb-20">
+        <div className="text-center mb-12">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 backdrop-blur px-4 py-1.5 text-xs text-muted-foreground">
+            <Sparkles className="h-3 w-3 text-accent" />
+            上传你的脸 + 一款产品，AI 分析是否适合
+          </div>
+          <h1 className="text-4xl md:text-6xl font-bold leading-[1.05] tracking-tight">
+            这款<span className="text-gradient">真的适合</span>你的皮肤吗？
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-base md:text-lg text-muted-foreground">
+            两张照片，10 秒判断刺激、过敏、闷痘、光敏等 6 项风险。
+          </p>
+        </div>
+
+        {/* The two capture cards */}
+        <div className="grid gap-5 sm:gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+          <CaptureCard
+            kind="face"
+            title="你的脸"
+            subtitle="正面 · 自然光 · 素颜效果最佳"
+            previewUrl={facePreview}
+            accentLabel="你"
+            onCapture={setFace}
+            onClear={() => {
+              setFaceBlob(null);
+              setFacePreview(null);
+            }}
+          />
+          <CaptureCard
+            kind="product"
+            title="产品"
+            subtitle="化妆品 / 防晒 / 护肤品瓶身"
+            previewUrl={productPreview}
+            accentLabel="产品"
+            onCapture={setProduct}
+            onClear={() => {
+              setProductBlob(null);
+              setProductPreview(null);
+            }}
           />
         </div>
-        <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-4 py-1.5 text-xs text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-            由 Gemini 多模态视觉模型驱动
-          </div>
-          <h1 className="text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight">
-            <span className="text-gradient">看见</span>你的肌肤
-            <br />
-            像专家一样
-          </h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground">
-            上传一张正面照片，AI 在 10 秒内完成 7 项肤质评估，生成可执行的护理建议报告。
-          </p>
-          <div className="mt-10 flex justify-center gap-3">
-            <Link
-              to="/analyze"
-              className="group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 font-medium text-accent-foreground glow-accent hover:opacity-90 transition-opacity"
-            >
-              开始免费分析
-              <span className="transition-transform group-hover:translate-x-0.5">→</span>
-            </Link>
-            <a
-              href="#features"
-              className="inline-flex items-center rounded-full border border-border bg-surface/40 px-6 py-3 font-medium hover:bg-surface transition-colors"
-            >
-              查看指标
-            </a>
-          </div>
 
-          <div className="mx-auto mt-20 max-w-4xl">
-            <div className="glass rounded-3xl p-8 text-left">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {[
-                  { label: "综合健康", value: "86", unit: "分" },
-                  { label: "肤质类型", value: "混合", unit: "偏油" },
-                  { label: "评估维度", value: "7", unit: "项" },
-                  { label: "用时", value: "<10", unit: "秒" },
-                ].map((s) => (
-                  <div key={s.label}>
-                    <div className="text-xs uppercase tracking-widest text-muted-foreground">{s.label}</div>
-                    <div className="mt-2 font-display text-4xl font-semibold">
-                      {s.value}
-                      <span className="ml-1 text-base font-normal text-muted-foreground">{s.unit}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+        {/* CTA */}
+        <div className="mt-10 flex flex-col items-center gap-4">
+          {error && (
+            <div className="rounded-full border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+              {error}
             </div>
+          )}
+          <button
+            onClick={submit}
+            disabled={!ready}
+            className="cta-glow inline-flex items-center gap-2.5 rounded-full px-9 py-4 text-base font-semibold text-accent-foreground disabled:cursor-not-allowed transition-transform hover:scale-[1.02] active:scale-[0.98]"
+          >
+            {stage === "idle" && (
+              <>
+                分析适配度
+                <Sparkles className="h-4 w-4" />
+              </>
+            )}
+            {stage !== "idle" && (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {stage === "preprocessing" ? "图像对齐与光照矫正中…" : "AI 分析中…"}
+              </>
+            )}
+          </button>
+          <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            照片仅用于本次分析，不会上传保存
           </div>
         </div>
-      </section>
-
-      <section id="features" className="mx-auto max-w-6xl px-6 py-24">
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold">7 项核心肤质指标</h2>
-          <p className="mt-3 text-muted-foreground">视觉 AI + 皮肤专家知识库联合评估</p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {features.map((f) => (
-            <div
-              key={f.title}
-              className="group rounded-2xl border border-border bg-surface/40 p-6 transition-all hover:bg-surface hover:border-accent/30"
-            >
-              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 text-accent">
-                <f.icon className="h-5 w-5" strokeWidth={1.8} />
-              </div>
-              <h3 className="font-display text-lg font-semibold">{f.title}</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground">{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-6 pb-24">
-        <div className="glass rounded-3xl p-10 md:p-14">
-          <div className="mb-10 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold">三步获得专属报告</h2>
-          </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              { n: "01", t: "拍摄或上传", d: "在自然光下正面拍摄，或上传清晰照片" },
-              { n: "02", t: "AI 视觉分析", d: "图像增强 + 多模态模型评估 7 项指标" },
-              { n: "03", t: "查看护理建议", d: "可视化报告与可执行的护肤建议" },
-            ].map((s) => (
-              <div key={s.n}>
-                <div className="font-mono text-xs text-accent">{s.n}</div>
-                <div className="mt-3 font-display text-xl font-semibold">{s.t}</div>
-                <div className="mt-1.5 text-sm text-muted-foreground">{s.d}</div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-10 text-center">
-            <Link to="/analyze" className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 font-medium text-accent-foreground glow-accent">
-              立即开始 <Sparkles className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
+      </main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-6 py-8 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} SkinSense · 分析结果仅供日常护肤参考，不构成医学诊断
+        <div className="mx-auto max-w-6xl px-6 py-6 text-center text-xs text-muted-foreground">
+          © {new Date().getFullYear()} SkinMatch · 仅供日常护肤参考，不构成医学诊断
         </div>
       </footer>
+
+      {/* Fullscreen analyzing overlay */}
+      {stage !== "idle" && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 backdrop-blur-xl">
+          <div
+            className="stereo-card rounded-3xl px-10 py-12 text-center max-w-sm mx-4"
+            style={{ background: "var(--surface)" }}
+          >
+            <div className="relative mx-auto h-16 w-16">
+              <div className="absolute inset-0 rounded-full bg-accent/20 animate-ping" />
+              <div className="relative h-16 w-16 grid place-items-center rounded-full bg-accent/15 border border-accent/30">
+                <Sparkles className="h-7 w-7 text-accent animate-pulse" />
+              </div>
+            </div>
+            <div className="mt-6 font-display text-xl font-semibold">
+              {stage === "preprocessing"
+                ? "正在对齐人脸 · 光照矫正"
+                : "Gemini 正在判断适配度"}
+            </div>
+            <div className="mt-2 text-sm text-muted-foreground">
+              {stage === "preprocessing"
+                ? "首次会加载关键点模型，约 3-6 秒"
+                : "综合多分区肤质 × 产品成分，约 6-12 秒"}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
