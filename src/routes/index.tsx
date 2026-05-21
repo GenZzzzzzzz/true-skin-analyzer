@@ -212,7 +212,7 @@ function Home() {
             <div className="relative mx-auto h-16 w-16">
               <div className="absolute inset-0 rounded-full bg-accent/20 animate-ping" />
               <div className="relative h-16 w-16 grid place-items-center rounded-full bg-accent/15 border border-accent/30">
-                <Sparkles className="h-7 w-7 text-accent animate-pulse" />
+                <Loader2 className="h-7 w-7 text-accent animate-spin" />
               </div>
             </div>
             <div className="mt-6 font-display text-xl font-semibold">
