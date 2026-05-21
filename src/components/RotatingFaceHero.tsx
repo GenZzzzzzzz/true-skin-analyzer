@@ -29,8 +29,26 @@ const Z = {
     "M22,72 C28,70 36,71 40,74 C42,79 40,84 36,86 C30,87 24,84 21,80 C19,77 20,73 22,72 Z",
 };
 
+// Centroid (in 0–100 viewBox coords) + canonical issue text per zone.
+// Mirrors the labels used on /report so the homepage previews the same
+// diagnostic language judges will see in the final analysis.
+const ZONE_META: Record<
+  keyof typeof Z,
+  { cx: number; cy: number; issue: string }
+> = {
+  forehead:      { cx: 48, cy: 25, issue: "出油 / 闭口" },
+  nose:          { cx: 50, cy: 56, issue: "黑头 · 毛孔" },
+  leftCheek:     { cx: 30, cy: 60, issue: "泛红 · 敏感" },
+  rightCheek:    { cx: 70, cy: 60, issue: "干燥 · 脱皮" },
+  chin:          { cx: 50, cy: 86, issue: "爆痘高发" },
+  perioralLeft:  { cx: 33, cy: 71, issue: "唇周干裂" },
+  perioralRight: { cx: 67, cy: 71, issue: "刺激泛红" },
+  jaw:           { cx: 28, cy: 80, issue: "暗沉 · 痘印" },
+};
+
+type ZoneKey = keyof typeof Z;
 type Tone = "red" | "yellow";
-type ZonePath = { d: string; tone: Tone };
+type ZonePath = { key: ZoneKey; tone: Tone };
 
 type Product = {
   src: string;
@@ -43,41 +61,41 @@ const PRODUCTS: Product[] = [
     src: c1,
     name: "Hyaluronic Serum",
     zones: [
-      { d: Z.forehead, tone: "yellow" },
-      { d: Z.nose, tone: "red" },
+      { key: "forehead", tone: "yellow" },
+      { key: "nose", tone: "red" },
     ],
   },
   {
     src: c2,
     name: "Protective Day Cream",
     zones: [
-      { d: Z.forehead, tone: "yellow" },
-      { d: Z.leftCheek, tone: "yellow" },
+      { key: "forehead", tone: "yellow" },
+      { key: "leftCheek", tone: "yellow" },
     ],
   },
   {
     src: c3,
     name: "Radiant Fluid Foundation",
     zones: [
-      { d: Z.leftCheek, tone: "red" },
-      { d: Z.rightCheek, tone: "red" },
-      { d: Z.chin, tone: "yellow" },
+      { key: "leftCheek", tone: "red" },
+      { key: "rightCheek", tone: "red" },
+      { key: "chin", tone: "yellow" },
     ],
   },
   {
     src: c4,
     name: "Couture Lipstick",
     zones: [
-      { d: Z.perioralLeft, tone: "red" },
-      { d: Z.perioralRight, tone: "red" },
+      { key: "perioralLeft", tone: "red" },
+      { key: "perioralRight", tone: "red" },
     ],
   },
   {
     src: c5,
     name: "Face Cream",
     zones: [
-      { d: Z.forehead, tone: "yellow" },
-      { d: Z.jaw, tone: "yellow" },
+      { key: "forehead", tone: "yellow" },
+      { key: "jaw", tone: "yellow" },
     ],
   },
 ];
@@ -139,7 +157,7 @@ export function RotatingFaceHero() {
           <g filter="url(#hero-bleed)">
             {product.zones.map((z, i) => {
               const rgb = z.tone === "red" ? "240,40,40" : "250,165,30";
-              return <path key={i} d={z.d} fill={`rgba(${rgb},0.7)`} />;
+              return <path key={i} d={Z[z.key]} fill={`rgba(${rgb},0.7)`} />;
             })}
           </g>
         </svg>
@@ -163,7 +181,7 @@ export function RotatingFaceHero() {
               return (
                 <path
                   key={i}
-                  d={z.d}
+                  d={Z[z.key]}
                   fill={`rgba(${rgb},0.7)`}
                   className={z.tone === "red" ? "animate-pulse" : ""}
                 />
@@ -171,7 +189,39 @@ export function RotatingFaceHero() {
             })}
           </g>
         </svg>
+
+        {/* Issue label chips — anchored to each zone centroid */}
+        <div
+          key={`labels-${active}`}
+          className="absolute inset-0 pointer-events-none zone-fade-in"
+        >
+          {product.zones.map((z, i) => {
+            const meta = ZONE_META[z.key];
+            const isRed = z.tone === "red";
+            return (
+              <div
+                key={i}
+                className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-medium backdrop-blur-sm"
+                style={{
+                  left: `${meta.cx}%`,
+                  top: `${meta.cy}%`,
+                  background: isRed
+                    ? "rgba(244, 63, 94, 0.22)"
+                    : "rgba(250, 165, 30, 0.20)",
+                  borderColor: isRed
+                    ? "rgba(253, 164, 175, 0.55)"
+                    : "rgba(252, 211, 77, 0.55)",
+                  color: isRed ? "#fecdd3" : "#fde68a",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.6)",
+                }}
+              >
+                {meta.issue}
+              </div>
+            );
+          })}
+        </div>
       </div>
+
 
       <FilmStrip products={PRODUCTS} tick={tick} onSelect={(i) => setTick(i)} />
     </div>
