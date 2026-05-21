@@ -15,6 +15,7 @@ import {
   type RiskRadar,
   type Severity,
   type Verdict,
+  type SkinAgeImpact,
 } from "@/lib/compatibility-types";
 import faceMeshImg from "@/assets/face-mesh-v2.png";
 import { Stereo3DFace } from "@/components/Stereo3DFace";
@@ -153,6 +154,98 @@ const SEV_STYLE: Record<Severity, string> = {
   中: "bg-amber-500/15 text-amber-300 border-amber-400/30",
   高: "bg-rose-500/15 text-rose-300 border-rose-400/30",
 };
+
+function SkinAgeImpactCard({ impact }: { impact: SkinAgeImpact }) {
+  const years = impact.years;
+  const signed = `${years > 0 ? "+" : ""}${years.toFixed(1)}`;
+  const isAging = impact.direction === "aging";
+  const isRejuv = impact.direction === "rejuvenating";
+  const tone = isAging
+    ? { text: "text-rose-300", chip: "bg-rose-500/15 border-rose-400/40 text-rose-200", glow: "oklch(0.65 0.2 25)" }
+    : isRejuv
+      ? { text: "text-emerald-300", chip: "bg-emerald-500/15 border-emerald-400/40 text-emerald-200", glow: "oklch(0.75 0.18 165)" }
+      : { text: "text-muted-foreground", chip: "bg-white/5 border-white/15 text-muted-foreground", glow: "oklch(0.7 0.05 220)" };
+  const label = isAging ? "▲ 加速衰老" : isRejuv ? "▼ 有抗老收益" : "● 基本中性";
+
+  // pointer on -2 .. +5 scale
+  const min = -2, max = 5;
+  const pct = Math.max(0, Math.min(1, (years - min) / (max - min))) * 100;
+
+  return (
+    <div className="mt-6 stereo-card rounded-3xl p-8 md:p-10 relative overflow-hidden">
+      <div
+        className="pointer-events-none absolute -top-24 right-0 h-64 w-64 rounded-full blur-3xl opacity-40"
+        style={{ background: `radial-gradient(circle, ${tone.glow}, transparent 70%)` }}
+      />
+      <div className="text-xs uppercase tracking-widest text-muted-foreground">
+        Skin Age Impact · 持续使用 12 个月
+      </div>
+      <div className="mt-2 grid gap-8 md:grid-cols-[auto,1fr] items-center">
+        <div className="text-center md:text-left">
+          <div className={`font-display text-6xl md:text-7xl font-bold tabular-nums ${tone.text}`}>
+            {signed} <span className="text-2xl md:text-3xl font-medium opacity-80">岁</span>
+          </div>
+          <div className={`mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${tone.chip}`}>
+            {label}
+            <span className="opacity-60">· 置信度 {impact.confidence}</span>
+          </div>
+        </div>
+        <div>
+          <div className="text-sm text-foreground/80 leading-relaxed">
+            预计这款产品规律使用一年后，会让你的<strong className={tone.text}>皮肤生物学年龄</strong>
+            {isAging ? "比实际年龄多走" : isRejuv ? "相对实际年龄回拨" : "几乎不变化，约"}
+            <span className={`mx-1 font-semibold ${tone.text}`}>{Math.abs(years).toFixed(1)} 岁</span>。
+          </div>
+          {/* scale bar */}
+          <div className="mt-4">
+            <div className="relative h-1.5 rounded-full bg-white/10">
+              <div
+                className="absolute top-1/2 -translate-y-1/2 h-3 w-3 rounded-full border-2 border-white shadow"
+                style={{ left: `calc(${pct}% - 6px)`, background: tone.glow }}
+              />
+            </div>
+            <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
+              <span>-2 岁 (抗老)</span>
+              <span>0</span>
+              <span>+5 岁 (加速衰老)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Drivers */}
+      <div className="mt-6 grid gap-2">
+        <div className="text-xs uppercase tracking-widest text-muted-foreground">主要驱动因素</div>
+        <ul className="grid gap-2">
+          {impact.drivers.map((d, i) => {
+            const positive = d.contributionYears > 0;
+            return (
+              <li
+                key={i}
+                className="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <div className="text-sm font-medium">{d.factor}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{d.mechanism}</div>
+                </div>
+                <div
+                  className={`shrink-0 tabular-nums text-sm font-semibold ${positive ? "text-rose-300" : "text-emerald-300"}`}
+                >
+                  {positive ? "+" : ""}
+                  {d.contributionYears.toFixed(1)} 岁
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      <div className="mt-4 text-[11px] text-muted-foreground">
+        * {impact.caveat}
+      </div>
+    </div>
+  );
+}
 
 function ReportPage() {
   const [report, setReport] = useState<CompatibilityReport | null>(null);
@@ -313,6 +406,11 @@ function ReportPage() {
             </div>
           </div>
         </div>
+
+        {/* Skin Age Impact — Regenerative Bio hero number */}
+        {report.skinAgeImpact && <SkinAgeImpactCard impact={report.skinAgeImpact} />}
+
+
 
         {/* Two cards: skin + product */}
         <div className="mt-6 grid gap-5 md:grid-cols-2">

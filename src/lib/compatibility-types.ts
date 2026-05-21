@@ -26,6 +26,21 @@ export interface RiskRadar {
   oiliness: number; // 油感/闷感
 }
 
+export interface SkinAgeDriver {
+  factor: string;
+  mechanism: string;
+  contributionYears: number;
+}
+
+export interface SkinAgeImpact {
+  years: number; // -2.0 ~ +5.0, 1 decimal
+  direction: "aging" | "neutral" | "rejuvenating";
+  horizon: "12_months";
+  confidence: "低" | "中" | "高";
+  drivers: SkinAgeDriver[];
+  caveat: string;
+}
+
 export interface CompatibilityReport {
   product: {
     name: string;
@@ -45,6 +60,7 @@ export interface CompatibilityReport {
   usageTips: string[];
   alternatives?: string[];
   riskRadar: RiskRadar;
+  skinAgeImpact: SkinAgeImpact;
   createdAt: string;
 }
 
