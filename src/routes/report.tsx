@@ -454,8 +454,8 @@ function ReportPage() {
                     if (v < 45) return null;
                     const isHot = v >= 70;
                     const rgb = isHot ? "239,68,68" : "251,191,36";
-                    const fillAlpha = 0.72 + (v / 100) * 0.2;
-                    const strokeAlpha = isHot ? 0.95 : 0.85;
+                    const fillAlpha = 0.38 + (v / 100) * 0.22;
+                    const strokeAlpha = isHot ? 0.75 : 0.6;
                     return (
                       <g key={z.id} className={isHot ? "animate-pulse" : ""}>
                         {/* 填充层 —— 轻微模糊使边缘更自然 */}
