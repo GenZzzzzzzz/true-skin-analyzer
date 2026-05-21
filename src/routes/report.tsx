@@ -16,6 +16,12 @@ import {
   type Verdict,
 } from "@/lib/compatibility-types";
 
+const VERDICT_MAP: Record<Verdict, { label: string; sub: string }> = {
+  推荐: { label: "放心用", sub: "" },
+  谨慎: { label: "最好别用", sub: "但也不是不行" },
+  不推荐: { label: "千万别用", sub: "" },
+};
+
 export const Route = createFileRoute("/report")({
   head: () => ({
     meta: [
