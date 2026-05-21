@@ -19,25 +19,115 @@ import {
 import faceMeshImg from "@/assets/face-mesh.png";
 
 // 面部分区 → 在 wireframe 图上的相对位置 (%)，以及该分区主要受哪些风险影响
+// blobs: 该分区由多个椭圆叠加而成，形成不规则覆盖形状（坐标都是相对 image 的 %）
+type Blob = { cx: number; cy: number; rx: number; ry: number; rot?: number };
 type FaceZone = {
   id: string;
   label: string;
-  x: number;
-  y: number;
-  size: number; // hotspot 基础半径 (px on 1x)
+  labelX: number; // label 位置
+  labelY: number;
+  blobs: Blob[]; // 多个椭圆叠加 + 模糊 → 不规则形状
   drivers: Array<keyof RiskRadar>;
   hint: string;
 };
 
 const FACE_ZONES: FaceZone[] = [
-  { id: "forehead", label: "额头 · T 区", x: 22, y: 17, size: 56, drivers: ["oiliness", "comedogenic"], hint: "出油 / 闭口高发区" },
-  { id: "nose", label: "鼻翼 · 黑头区", x: 22, y: 47, size: 42, drivers: ["oiliness", "comedogenic", "irritation"], hint: "黑头、毛孔粗大" },
-  { id: "eye", label: "眼周", x: 29, y: 31, size: 38, drivers: ["allergy", "irritation", "dryness"], hint: "皮肤最薄，易刺痛 / 过敏" },
-  { id: "left-cheek", label: "左颊", x: 11, y: 52, size: 50, drivers: ["dryness", "irritation", "photo"], hint: "干燥 / 泛红 / 晒伤区" },
-  { id: "right-cheek", label: "右颊", x: 33, y: 52, size: 50, drivers: ["dryness", "irritation", "photo"], hint: "干燥 / 泛红 / 晒伤区" },
-  { id: "chin", label: "下巴", x: 22, y: 76, size: 46, drivers: ["comedogenic", "oiliness"], hint: "周期性闷痘高发区" },
-  { id: "jaw-side", label: "下颌线", x: 72, y: 74, size: 48, drivers: ["comedogenic", "irritation"], hint: "闷痘 / 摩擦刺激" },
-  { id: "temple", label: "太阳穴", x: 62, y: 28, size: 40, drivers: ["photo", "dryness"], hint: "易晒伤 / 干纹" },
+  {
+    id: "forehead",
+    label: "额头 · T 区",
+    labelX: 22, labelY: 11,
+    blobs: [
+      { cx: 22, cy: 17, rx: 18, ry: 7, rot: -4 },
+      { cx: 15, cy: 18, rx: 8, ry: 6 },
+      { cx: 29, cy: 18, rx: 8, ry: 6 },
+      { cx: 22, cy: 22, rx: 10, ry: 4 },
+    ],
+    drivers: ["oiliness", "comedogenic"],
+    hint: "出油 / 闭口高发区",
+  },
+  {
+    id: "nose",
+    label: "鼻翼 · 黑头区",
+    labelX: 22, labelY: 41,
+    blobs: [
+      { cx: 22, cy: 48, rx: 5, ry: 9 },
+      { cx: 18, cy: 50, rx: 4, ry: 4 },
+      { cx: 26, cy: 50, rx: 4, ry: 4 },
+      { cx: 22, cy: 54, rx: 6, ry: 3 },
+    ],
+    drivers: ["oiliness", "comedogenic", "irritation"],
+    hint: "黑头、毛孔粗大",
+  },
+  {
+    id: "eye",
+    label: "眼周",
+    labelX: 29, labelY: 25,
+    blobs: [
+      { cx: 14, cy: 32, rx: 7, ry: 3.5, rot: -8 },
+      { cx: 30, cy: 32, rx: 7, ry: 3.5, rot: 8 },
+    ],
+    drivers: ["allergy", "irritation", "dryness"],
+    hint: "皮肤最薄，易刺痛 / 过敏",
+  },
+  {
+    id: "left-cheek",
+    label: "左颊",
+    labelX: 11, labelY: 44,
+    blobs: [
+      { cx: 11, cy: 53, rx: 9, ry: 11, rot: -12 },
+      { cx: 8, cy: 50, rx: 5, ry: 6 },
+      { cx: 14, cy: 60, rx: 6, ry: 5 },
+    ],
+    drivers: ["dryness", "irritation", "photo"],
+    hint: "干燥 / 泛红 / 晒伤区",
+  },
+  {
+    id: "right-cheek",
+    label: "右颊",
+    labelX: 33, labelY: 44,
+    blobs: [
+      { cx: 33, cy: 53, rx: 9, ry: 11, rot: 12 },
+      { cx: 36, cy: 50, rx: 5, ry: 6 },
+      { cx: 30, cy: 60, rx: 6, ry: 5 },
+    ],
+    drivers: ["dryness", "irritation", "photo"],
+    hint: "干燥 / 泛红 / 晒伤区",
+  },
+  {
+    id: "chin",
+    label: "下巴",
+    labelX: 22, labelY: 84,
+    blobs: [
+      { cx: 22, cy: 78, rx: 9, ry: 5 },
+      { cx: 18, cy: 76, rx: 5, ry: 4 },
+      { cx: 26, cy: 76, rx: 5, ry: 4 },
+    ],
+    drivers: ["comedogenic", "oiliness"],
+    hint: "周期性闷痘高发区",
+  },
+  {
+    id: "jaw-side",
+    label: "下颌线",
+    labelX: 72, labelY: 68,
+    blobs: [
+      { cx: 72, cy: 75, rx: 12, ry: 5, rot: -10 },
+      { cx: 66, cy: 73, rx: 5, ry: 4 },
+      { cx: 78, cy: 77, rx: 5, ry: 4 },
+    ],
+    drivers: ["comedogenic", "irritation"],
+    hint: "闷痘 / 摩擦刺激",
+  },
+  {
+    id: "temple",
+    label: "太阳穴",
+    labelX: 62, labelY: 22,
+    blobs: [
+      { cx: 62, cy: 29, rx: 7, ry: 8, rot: 15 },
+      { cx: 58, cy: 32, rx: 4, ry: 5 },
+    ],
+    drivers: ["photo", "dryness"],
+    hint: "易晒伤 / 干纹",
+  },
 ];
 
 function getZoneIntensity(zone: FaceZone, radar: RiskRadar): number {
@@ -357,37 +447,47 @@ function ReportPage() {
                 className="w-full h-auto block opacity-90 mix-blend-luminosity"
                 draggable={false}
               />
-              {/* Hotspot overlay */}
-              <div className="absolute inset-0">
+              {/* Hotspot overlay — irregular blurred blobs via SVG */}
+              <svg
+                className="absolute inset-0 w-full h-full pointer-events-none"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <filter id="blob-blur" x="-30%" y="-30%" width="160%" height="160%">
+                    <feGaussianBlur stdDeviation="1.6" />
+                  </filter>
+                </defs>
                 {FACE_ZONES.map((z) => {
                   const v = getZoneIntensity(z, report.riskRadar);
-                  if (v < 45) return null; // 只显示需留意 / 重灾区
+                  if (v < 45) return null;
                   const isHot = v >= 70;
-                  const color = isHot
-                    ? "239,68,68" // rose-500
-                    : "251,191,36"; // amber-400
-                  const alpha = 0.35 + (v / 100) * 0.5;
-                  const sizePx = z.size * 1.7 + (v / 100) * 50;
+                  const rgb = isHot ? "239,68,68" : "251,191,36";
+                  const alpha = 0.4 + (v / 100) * 0.45;
+                  const scale = 1 + (v - 45) / 110; // 1.0 ~ 1.5
                   return (
-                    <div
+                    <g
                       key={z.id}
-                      className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                      style={{ left: `${z.x}%`, top: `${z.y}%` }}
+                      filter="url(#blob-blur)"
+                      className={isHot ? "animate-pulse" : ""}
                     >
-                      <div
-                        className={isHot ? "animate-pulse" : ""}
-                        style={{
-                          width: `${sizePx}px`,
-                          height: `${sizePx}px`,
-                          borderRadius: "9999px",
-                          background: `radial-gradient(circle, rgba(${color},${alpha}) 0%, rgba(${color},${alpha * 0.6}) 45%, transparent 75%)`,
-                          filter: "blur(4px)",
-                        }}
-                      />
-                    </div>
+                      {z.blobs.map((b, i) => (
+                        <ellipse
+                          key={i}
+                          cx={b.cx}
+                          cy={b.cy}
+                          rx={b.rx * scale}
+                          ry={b.ry * scale}
+                          transform={b.rot ? `rotate(${b.rot} ${b.cx} ${b.cy})` : undefined}
+                          fill={`rgba(${rgb},${alpha})`}
+                        />
+                      ))}
+                    </g>
                   );
                 })}
-                {/* Labels */}
+              </svg>
+              {/* Labels */}
+              <div className="absolute inset-0">
                 {FACE_ZONES.map((z) => {
                   const v = getZoneIntensity(z, report.riskRadar);
                   if (v < 45) return null;
@@ -396,7 +496,7 @@ function ReportPage() {
                     <div
                       key={`${z.id}-label`}
                       className="absolute -translate-x-1/2 pointer-events-none"
-                      style={{ left: `${z.x}%`, top: `calc(${z.y}% - 4px)` }}
+                      style={{ left: `${z.labelX}%`, top: `${z.labelY}%` }}
                     >
                       <div
                         className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur-md border ${
