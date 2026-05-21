@@ -36,7 +36,7 @@ const PRODUCTS: Product[] = [
     name: "Protective Day Cream",
     // Upper forehead (yellow) + left cheek (yellow)
     zones: [
-      { top: "6%", left: "18%", width: "64%", height: "20%", tone: "yellow" },
+      { top: "4%", left: "14%", width: "72%", height: "26%", tone: "yellow" },
       { top: "54%", left: "10%", width: "22%", height: "16%", tone: "yellow" },
     ],
   },
