@@ -158,17 +158,21 @@ async function sourceToCanvas(source: Blob | HTMLVideoElement): Promise<HTMLCanv
   return c;
 }
 
+interface AlignTransform {
+  angle: number; cx: number; cy: number; scale: number; dim: number;
+  srcW: number; srcH: number;
+}
+
 function alignFace(
   source: HTMLCanvasElement,
   lmks: NormalizedPoint[],
   maxSize: number,
-): HTMLCanvasElement {
+): { canvas: HTMLCanvasElement; t: AlignTransform } {
   const W = source.width, H = source.height;
   const le = { x: lmks[LMK.leftEyeOuter].x * W, y: lmks[LMK.leftEyeOuter].y * H };
   const re = { x: lmks[LMK.rightEyeOuter].x * W, y: lmks[LMK.rightEyeOuter].y * H };
   const angle = Math.atan2(re.y - le.y, re.x - le.x);
 
-  // bounding box of all landmarks
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const p of lmks) {
     const x = p.x * W, y = p.y * H;
@@ -177,7 +181,7 @@ function alignFace(
   }
   const cx = (minX + maxX) / 2;
   const cy = (minY + maxY) / 2;
-  const faceSize = Math.max(maxX - minX, maxY - minY) * 1.45; // include forehead / chin margin
+  const faceSize = Math.max(maxX - minX, maxY - minY) * 1.45;
 
   const out = document.createElement("canvas");
   const scale = Math.min(1, maxSize / faceSize);
@@ -194,7 +198,19 @@ function alignFace(
   ctx.translate(-cx, -cy);
   ctx.drawImage(source, 0, 0);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  return out;
+  return { canvas: out, t: { angle, cx, cy, scale, dim, srcW: W, srcH: H } };
+}
+
+// Map a normalized source landmark into aligned-canvas pixel coords using the
+// same affine as alignFace: (sx-cx,sy-cy) → rotate(-angle) → scale → +dim/2.
+function mapLandmark(p: NormalizedPoint, t: AlignTransform) {
+  const sx = p.x * t.srcW - t.cx;
+  const sy = p.y * t.srcH - t.cy;
+  const cos = Math.cos(-t.angle), sin = Math.sin(-t.angle);
+  return {
+    x: (sx * cos - sy * sin) * t.scale + t.dim / 2,
+    y: (sx * sin + sy * cos) * t.scale + t.dim / 2,
+  };
 }
 
 function centerSquare(source: HTMLCanvasElement, maxSize: number): HTMLCanvasElement {
