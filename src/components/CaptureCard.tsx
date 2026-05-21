@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Camera, Upload, RotateCcw, X, Check } from "lucide-react";
 
 interface Props {
@@ -22,19 +22,41 @@ export function CaptureCard({
 }: Props) {
   const [camOpen, setCamOpen] = useState(false);
   const [camError, setCamError] = useState<string | null>(null);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [cameraStarting, setCameraStarting] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const fileInputId = useId();
 
   useEffect(() => () => stopCamera(), []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!camOpen || !video || !cameraStream) return;
+
+    video.srcObject = cameraStream;
+    void video.play().catch(() => {
+      setCamError("摄像头启动失败，请改用上传");
+      setCameraStarting(false);
+    });
+  }, [camOpen, cameraStream]);
 
   function stopCamera() {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    setCameraStream(null);
+    setCameraStarting(false);
+    setCameraReady(false);
   }
 
   async function openCamera() {
+    if (cameraStarting) return;
     setCamError(null);
+    setCameraReady(false);
+    setCameraStarting(true);
+    setCamOpen(true);
     try {
       const facingMode = kind === "face" ? "user" : "environment";
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -42,16 +64,10 @@ export function CaptureCard({
         audio: false,
       });
       streamRef.current = stream;
-      setCamOpen(true);
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(() => {});
-        }
-      }, 50);
+      setCameraStream(stream);
     } catch {
       setCamError("无法访问摄像头，请改用上传");
-      setCamOpen(true);
+      setCameraStarting(false);
     }
   }
 
@@ -62,7 +78,7 @@ export function CaptureCard({
 
   function snap() {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || !cameraReady || !v.videoWidth || !v.videoHeight) return;
     const c = document.createElement("canvas");
     c.width = v.videoWidth;
     c.height = v.videoHeight;
