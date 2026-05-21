@@ -176,12 +176,7 @@ function Home() {
             disabled={!ready}
             className="cta-glow inline-flex items-center gap-2.5 rounded-full px-9 py-4 text-base font-semibold text-accent-foreground disabled:cursor-not-allowed transition-transform hover:scale-[1.02] active:scale-[0.98]"
           >
-            {stage === "idle" && (
-              <>
-                分析适配度
-                <Sparkles className="h-4 w-4" />
-              </>
-            )}
+            {stage === "idle" && <>分析适配度</>}
             {stage !== "idle" && (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
