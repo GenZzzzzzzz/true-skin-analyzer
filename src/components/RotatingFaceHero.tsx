@@ -93,15 +93,20 @@ export function RotatingFaceHero() {
       <div
         className="relative"
         style={{
-          width: "min(520px, 78vw)",
-          aspectRatio: "1 / 1",
+          width: "min(620px, 86vw)",
+          aspectRatio: "632 / 848",
         }}
       >
         <img
           src={faceMeshImg}
           alt="3D face analysis"
           draggable={false}
-          className="absolute inset-0 m-auto h-full w-full object-contain select-none"
+          className="absolute inset-0 h-full w-full select-none"
+          style={{
+            filter:
+              "drop-shadow(0 30px 60px rgba(0,0,0,0.55)) drop-shadow(0 0 40px oklch(0.78 0.15 195 / 0.25))",
+          }}
+        />
           style={{
             filter:
               "drop-shadow(0 30px 60px rgba(0,0,0,0.55)) drop-shadow(0 0 40px oklch(0.78 0.15 195 / 0.25))",
