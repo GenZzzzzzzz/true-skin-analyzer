@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import faceMeshImg from "@/assets/face-mesh-v2.png";
+import faceMeshImg from "@/assets/face-mesh-left.png";
 import c1 from "@/assets/cosmetic-1.png";
 import c2 from "@/assets/cosmetic-2.png";
 import c3 from "@/assets/cosmetic-3.png";
@@ -25,41 +25,46 @@ const PRODUCTS: Product[] = [
   {
     src: c1,
     name: "Hyaluronic Serum",
+    // Forehead T-zone (yellow) + nose bridge (red)
     zones: [
-      { top: "32%", left: "32%", width: "16%", height: "10%", tone: "yellow" },
-      { top: "58%", left: "44%", width: "14%", height: "9%", tone: "red" },
+      { top: "12%", left: "22%", width: "55%", height: "16%", tone: "yellow" },
+      { top: "52%", left: "42%", width: "16%", height: "12%", tone: "red" },
     ],
   },
   {
     src: c2,
     name: "Protective Day Cream",
+    // Upper forehead (yellow) + left cheek (yellow)
     zones: [
-      { top: "18%", left: "38%", width: "22%", height: "12%", tone: "yellow" },
-      { top: "46%", left: "26%", width: "12%", height: "9%", tone: "yellow" },
+      { top: "10%", left: "24%", width: "52%", height: "14%", tone: "yellow" },
+      { top: "54%", left: "12%", width: "20%", height: "14%", tone: "yellow" },
     ],
   },
   {
     src: c3,
     name: "Radiant Fluid Foundation",
+    // Both cheeks (red) + chin (yellow)
     zones: [
-      { top: "40%", left: "28%", width: "14%", height: "10%", tone: "red" },
-      { top: "40%", left: "56%", width: "14%", height: "10%", tone: "red" },
-      { top: "62%", left: "42%", width: "16%", height: "9%", tone: "yellow" },
+      { top: "52%", left: "10%", width: "22%", height: "16%", tone: "red" },
+      { top: "52%", left: "62%", width: "24%", height: "16%", tone: "red" },
+      { top: "80%", left: "32%", width: "32%", height: "10%", tone: "yellow" },
     ],
   },
   {
     src: c4,
     name: "Couture Lipstick",
+    // Lips only (red)
     zones: [
-      { top: "68%", left: "40%", width: "20%", height: "8%", tone: "red" },
+      { top: "72%", left: "32%", width: "32%", height: "10%", tone: "red" },
     ],
   },
   {
     src: c5,
     name: "Face Cream",
+    // Forehead (yellow) + jawline (yellow)
     zones: [
-      { top: "22%", left: "32%", width: "30%", height: "10%", tone: "yellow" },
-      { top: "70%", left: "36%", width: "24%", height: "9%", tone: "yellow" },
+      { top: "12%", left: "22%", width: "55%", height: "14%", tone: "yellow" },
+      { top: "80%", left: "28%", width: "40%", height: "10%", tone: "yellow" },
     ],
   },
 ];
@@ -88,15 +93,15 @@ export function RotatingFaceHero() {
       <div
         className="relative"
         style={{
-          width: "min(520px, 78vw)",
-          aspectRatio: "1 / 1",
+          width: "min(620px, 86vw)",
+          aspectRatio: "632 / 848",
         }}
       >
         <img
           src={faceMeshImg}
           alt="3D face analysis"
           draggable={false}
-          className="absolute inset-0 m-auto h-full w-full object-contain select-none"
+          className="absolute inset-0 h-full w-full select-none"
           style={{
             filter:
               "drop-shadow(0 30px 60px rgba(0,0,0,0.55)) drop-shadow(0 0 40px oklch(0.78 0.15 195 / 0.25))",
