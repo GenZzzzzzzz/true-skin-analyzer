@@ -413,24 +413,23 @@ function ReportPage() {
 
           <div className="mt-5 grid gap-6 md:grid-cols-[1.4fr,1fr] items-start">
             {/* Image + hotspots */}
-            <div
-              className="relative rounded-2xl overflow-hidden border border-white/10"
-              style={{
-                background:
-                  "radial-gradient(120% 80% at 50% 30%, oklch(0.22 0.02 240 / 0.7), oklch(0.08 0.01 240 / 0.95))",
-              }}
-            >
+            <Stereo3DFace>
               <img
                 src={faceMeshImg}
                 alt="面部分区示意"
-                className="w-full h-auto block opacity-95 grayscale"
+                className="w-full h-auto block opacity-95 grayscale relative"
                 draggable={false}
+                style={{ transform: "translateZ(20px)" }}
               />
               {/* Hotspot overlay — 基于面部分割的精细轮廓 */}
               <svg
                 className="absolute inset-0 w-full h-full pointer-events-none mix-blend-multiply"
                 viewBox="0 0 100 100"
                 preserveAspectRatio="none"
+                style={{
+                  transform: "translateZ(35px)",
+                  filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.45))",
+                }}
               >
                 <defs>
                   <filter id="blob-blur" x="-20%" y="-20%" width="140%" height="140%">
@@ -480,7 +479,7 @@ function ReportPage() {
                 </g>
               </svg>
               {/* Labels */}
-              <div className="absolute inset-0">
+              <div className="absolute inset-0" style={{ transform: "translateZ(60px)" }}>
                 {FACE_ZONES.map((z) => {
                   const v = getZoneIntensity(z, report.riskRadar);
                   if (v < 45) return null;
@@ -504,7 +503,8 @@ function ReportPage() {
                   );
                 })}
               </div>
-            </div>
+            </Stereo3DFace>
+
 
             {/* Zone breakdown list */}
             <div className="space-y-2">
