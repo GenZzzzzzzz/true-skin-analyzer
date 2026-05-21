@@ -313,7 +313,7 @@ function ReportPage() {
         </div>
 
         {/* Hero: score ring + verdict + 3D face */}
-        <div className="grid gap-6 lg:grid-cols-[2fr,3fr] items-stretch">
+        <div className="grid gap-6 lg:grid-cols-[1fr,auto] items-stretch">
         <div className="stereo-card rounded-[2rem] p-8 md:p-10">
 
           <div className="grid gap-8 md:grid-cols-[auto,1fr] items-center">
@@ -410,7 +410,7 @@ function ReportPage() {
 
         {/* Face hotspot map — minimal, no side breakdown */}
 
-        <div className="stereo-card rounded-3xl p-6 md:p-8 overflow-hidden">
+        <div className="stereo-card rounded-3xl p-6 md:p-8 overflow-hidden lg:w-[380px]">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <div className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -430,7 +430,7 @@ function ReportPage() {
             </div>
           </div>
 
-          <div className="mt-6 mx-auto max-w-3xl">
+          <div className="mt-6 mx-auto max-w-xl">
             <Stereo3DFace>
               <img
                 src={faceMeshImg}
