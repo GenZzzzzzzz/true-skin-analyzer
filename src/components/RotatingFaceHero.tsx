@@ -93,7 +93,7 @@ export function RotatingFaceHero() {
       <div
         className="relative"
         style={{
-          width: "min(620px, 86vw)",
+          width: "min(420px, 70vw)",
           aspectRatio: "632 / 848",
         }}
       >
@@ -147,8 +147,8 @@ function FilmStrip({
   onSelect: (i: number) => void;
 }) {
   // Frame height + gap (matches CSS below)
-  const FRAME_H = 110;
-  const GAP = 10;
+  const FRAME_H = 90;
+  const GAP = 8;
   const STEP = FRAME_H + GAP;
   const VISIBLE = 3;
   // Center the active frame
@@ -158,7 +158,7 @@ function FilmStrip({
     <div
       className="relative hidden sm:block"
       style={{
-        width: 132,
+        width: 110,
         height: VISIBLE * FRAME_H + (VISIBLE - 1) * GAP,
       }}
     >
@@ -195,7 +195,7 @@ function FilmStrip({
       />
 
       {/* Frames track */}
-      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 overflow-hidden" style={{ width: 96 }}>
+      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 overflow-hidden" style={{ width: 80 }}>
         <div
           className="absolute left-0 right-0 transition-transform duration-700"
           style={{
