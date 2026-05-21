@@ -313,7 +313,7 @@ function ReportPage() {
         </div>
 
         {/* Hero: score ring + verdict + 3D face */}
-        <div className="grid gap-6 lg:grid-cols-2 items-stretch">
+        <div className="grid gap-6 lg:grid-cols-[2fr,3fr] items-stretch">
         <div className="stereo-card rounded-[2rem] p-8 md:p-10">
 
           <div className="grid gap-8 md:grid-cols-[auto,1fr] items-center">
@@ -430,7 +430,7 @@ function ReportPage() {
             </div>
           </div>
 
-          <div className="mt-6 mx-auto max-w-xl">
+          <div className="mt-6 mx-auto max-w-3xl">
             <Stereo3DFace>
               <img
                 src={faceMeshImg}
