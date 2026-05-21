@@ -107,11 +107,6 @@ export function RotatingFaceHero() {
               "drop-shadow(0 30px 60px rgba(0,0,0,0.55)) drop-shadow(0 0 40px oklch(0.78 0.15 195 / 0.25))",
           }}
         />
-          style={{
-            filter:
-              "drop-shadow(0 30px 60px rgba(0,0,0,0.55)) drop-shadow(0 0 40px oklch(0.78 0.15 195 / 0.25))",
-          }}
-        />
 
         {/* Risk zones overlay — fades when product changes */}
         <div key={active} className="absolute inset-0 zone-fade-in">
