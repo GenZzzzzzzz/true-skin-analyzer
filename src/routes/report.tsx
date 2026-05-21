@@ -365,16 +365,13 @@ function ReportPage() {
               <div className="absolute inset-0">
                 {FACE_ZONES.map((z) => {
                   const v = getZoneIntensity(z, report.riskRadar);
-                  if (v < 15) return null; // 太低就不画
+                  if (v < 45) return null; // 只显示需留意 / 重灾区
                   const isHot = v >= 70;
-                  const isMid = v >= 45 && v < 70;
                   const color = isHot
                     ? "239,68,68" // rose-500
-                    : isMid
-                      ? "251,191,36" // amber-400
-                      : "52,211,153"; // emerald-400
-                  const alpha = 0.18 + (v / 100) * 0.55;
-                  const sizePx = z.size + (v / 100) * 28;
+                    : "251,191,36"; // amber-400
+                  const alpha = 0.35 + (v / 100) * 0.5;
+                  const sizePx = z.size * 1.7 + (v / 100) * 50;
                   return (
                     <div
                       key={z.id}
@@ -387,8 +384,8 @@ function ReportPage() {
                           width: `${sizePx}px`,
                           height: `${sizePx}px`,
                           borderRadius: "9999px",
-                          background: `radial-gradient(circle, rgba(${color},${alpha}) 0%, rgba(${color},${alpha * 0.5}) 35%, transparent 70%)`,
-                          filter: "blur(2px)",
+                          background: `radial-gradient(circle, rgba(${color},${alpha}) 0%, rgba(${color},${alpha * 0.6}) 45%, transparent 75%)`,
+                          filter: "blur(4px)",
                         }}
                       />
                     </div>
