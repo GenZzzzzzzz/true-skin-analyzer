@@ -27,7 +27,7 @@ const PRODUCTS: Product[] = [
     name: "Hyaluronic Serum",
     // Forehead T-zone (yellow) + nose bridge (red)
     zones: [
-      { top: "12%", left: "22%", width: "55%", height: "16%", tone: "yellow" },
+      { top: "8%", left: "16%", width: "68%", height: "22%", tone: "yellow" },
       { top: "52%", left: "42%", width: "16%", height: "12%", tone: "red" },
     ],
   },
@@ -36,8 +36,8 @@ const PRODUCTS: Product[] = [
     name: "Protective Day Cream",
     // Upper forehead (yellow) + left cheek (yellow)
     zones: [
-      { top: "10%", left: "24%", width: "52%", height: "14%", tone: "yellow" },
-      { top: "54%", left: "12%", width: "20%", height: "14%", tone: "yellow" },
+      { top: "6%", left: "18%", width: "64%", height: "20%", tone: "yellow" },
+      { top: "54%", left: "10%", width: "22%", height: "16%", tone: "yellow" },
     ],
   },
   {
@@ -45,17 +45,18 @@ const PRODUCTS: Product[] = [
     name: "Radiant Fluid Foundation",
     // Both cheeks (red) + chin (yellow)
     zones: [
-      { top: "52%", left: "10%", width: "22%", height: "16%", tone: "red" },
-      { top: "52%", left: "62%", width: "24%", height: "16%", tone: "red" },
-      { top: "80%", left: "32%", width: "32%", height: "10%", tone: "yellow" },
+      { top: "52%", left: "8%", width: "24%", height: "18%", tone: "red" },
+      { top: "52%", left: "62%", width: "26%", height: "18%", tone: "red" },
+      { top: "82%", left: "30%", width: "36%", height: "12%", tone: "yellow" },
     ],
   },
   {
     src: c4,
     name: "Couture Lipstick",
-    // Lips only (red)
+    // Nasolabial / mouth-corner area (red) — NOT on the lips
     zones: [
-      { top: "72%", left: "32%", width: "32%", height: "10%", tone: "red" },
+      { top: "68%", left: "20%", width: "16%", height: "10%", tone: "red" },
+      { top: "68%", left: "62%", width: "16%", height: "10%", tone: "red" },
     ],
   },
   {
@@ -63,8 +64,8 @@ const PRODUCTS: Product[] = [
     name: "Face Cream",
     // Forehead (yellow) + jawline (yellow)
     zones: [
-      { top: "12%", left: "22%", width: "55%", height: "14%", tone: "yellow" },
-      { top: "80%", left: "28%", width: "40%", height: "10%", tone: "yellow" },
+      { top: "8%", left: "16%", width: "68%", height: "22%", tone: "yellow" },
+      { top: "82%", left: "26%", width: "44%", height: "12%", tone: "yellow" },
     ],
   },
 ];
