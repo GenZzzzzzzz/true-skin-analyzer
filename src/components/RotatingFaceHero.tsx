@@ -64,7 +64,7 @@ const PRODUCTS: Product[] = [
     name: "Face Cream",
     // Forehead (yellow) + jawline (yellow)
     zones: [
-      { top: "8%", left: "16%", width: "68%", height: "22%", tone: "yellow" },
+      { top: "4%", left: "12%", width: "76%", height: "28%", tone: "yellow" },
       { top: "82%", left: "26%", width: "44%", height: "12%", tone: "yellow" },
     ],
   },
