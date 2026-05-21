@@ -291,13 +291,14 @@ function FilmStrip({
                 >
                   <img
                     src={p.src}
-                  alt={p.name}
-                  draggable={false}
-                  className="absolute inset-0 m-auto h-full w-full object-contain p-2 select-none"
-                />
-              </div>
-            </button>
-          ))}
+                    alt={p.name}
+                    draggable={false}
+                    className="absolute inset-0 m-auto h-full w-full object-contain p-2 select-none"
+                  />
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
