@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import faceMeshImg from "@/assets/face-mesh-v2.png";
+import faceMeshImg from "@/assets/face-mesh-left.png";
 import c1 from "@/assets/cosmetic-1.png";
 import c2 from "@/assets/cosmetic-2.png";
 import c3 from "@/assets/cosmetic-3.png";
