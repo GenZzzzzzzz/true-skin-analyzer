@@ -95,9 +95,10 @@ export function RotatingFaceHero() {
   useEffect(() => {
     const t = setInterval(() => {
       setTick((i) => i + 1);
-    }, 2600);
+    }, 3500);
     return () => clearInterval(t);
   }, []);
+
 
   const active = ((tick % PRODUCTS.length) + PRODUCTS.length) % PRODUCTS.length;
   const product = PRODUCTS[active];
