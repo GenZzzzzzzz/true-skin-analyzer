@@ -192,14 +192,30 @@ function FilmStrip({
   const STEP = FRAME_H + GAP;
   const VISIBLE = 3;
   const N = products.length;
-  // Per-frame duration must match the parent tick interval (2600ms) so that
-  // the highlighted product visually aligns with the centered frame.
-  const PER_FRAME_MS = 2600;
+  // Per-frame duration must match the parent tick interval so the highlighted
+  // product visually aligns with the centered frame during the hold phase.
+  const PER_FRAME_MS = 3500;
   const totalMs = N * PER_FRAME_MS;
 
   const active = ((tick % N) + N) % N;
   // Triple the strip so the CSS loop never reveals a gap.
   const rendered = [...products, ...products, ...products];
+
+  // Build "hold then slide" keyframes: each frame holds for HOLD_RATIO of
+  // its cell, then slides one STEP to the next over the remaining time.
+  const HOLD_RATIO = 0.78;
+  const keyframes = (() => {
+    const stops: string[] = [];
+    for (let k = 0; k <= N; k++) {
+      const cellStartPct = (k * 100) / N;
+      stops.push(`${cellStartPct.toFixed(4)}% { transform: translateY(${-k * STEP}px); }`);
+      if (k < N) {
+        const holdEndPct = cellStartPct + (HOLD_RATIO * 100) / N;
+        stops.push(`${holdEndPct.toFixed(4)}% { transform: translateY(${-k * STEP}px); }`);
+      }
+    }
+    return stops.join("\n");
+  })();
 
   return (
     <div
@@ -211,10 +227,10 @@ function FilmStrip({
     >
       <style>{`
         @keyframes filmstrip-scroll {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-${N * STEP}px); }
+          ${keyframes}
         }
       `}</style>
+
 
       <div
         aria-hidden
