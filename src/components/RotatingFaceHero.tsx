@@ -147,8 +147,8 @@ function FilmStrip({
   onSelect: (i: number) => void;
 }) {
   // Frame height + gap (matches CSS below)
-  const FRAME_H = 110;
-  const GAP = 10;
+  const FRAME_H = 90;
+  const GAP = 8;
   const STEP = FRAME_H + GAP;
   const VISIBLE = 3;
   // Center the active frame
@@ -158,7 +158,7 @@ function FilmStrip({
     <div
       className="relative hidden sm:block"
       style={{
-        width: 132,
+        width: 110,
         height: VISIBLE * FRAME_H + (VISIBLE - 1) * GAP,
       }}
     >
