@@ -16,7 +16,7 @@ import {
   type Severity,
   type Verdict,
 } from "@/lib/compatibility-types";
-import faceMeshImg from "@/assets/face-mesh.png";
+import faceMeshImg from "@/assets/face-mesh-v2.png";
 import { Stereo3DFace } from "@/components/Stereo3DFace";
 
 // 面部分区 → 在 wireframe 图上的精细轮廓 (SVG path d, viewBox 100x100)
