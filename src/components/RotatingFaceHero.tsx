@@ -106,20 +106,28 @@ const PRODUCTS: Product[] = [
  * /report page so the homepage matches our reporting visual language.
  */
 export function RotatingFaceHero() {
-  // `tick` is a monotonically increasing counter so the film strip keeps
-  // sliding downward continuously instead of snapping back to the top.
-  const [tick, setTick] = useState(0);
+  // Anchor `active` to wall-clock elapsed time so it stays perfectly in
+  // sync with the CSS keyframe animation (setInterval drifts under load /
+  // when the tab is backgrounded, which desynced the face from the
+  // centered film frame).
+  const PER_FRAME_MS = 3500;
+  const [active, setActive] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(() => {
-      setTick((i) => i + 1);
-    }, 3500);
-    return () => clearInterval(t);
+    const start = performance.now();
+    let raf = 0;
+    const loop = () => {
+      const elapsed = performance.now() - start;
+      const idx = Math.floor(elapsed / PER_FRAME_MS) % PRODUCTS.length;
+      setActive((prev) => (prev === idx ? prev : idx));
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
   }, []);
 
-
-  const active = ((tick % PRODUCTS.length) + PRODUCTS.length) % PRODUCTS.length;
   const product = PRODUCTS[active];
+
 
   return (
     <div className="relative mx-auto flex items-center justify-center gap-6 sm:gap-10">
@@ -223,18 +231,18 @@ export function RotatingFaceHero() {
       </div>
 
 
-      <FilmStrip products={PRODUCTS} tick={tick} onSelect={(i) => setTick(i)} />
+      <FilmStrip products={PRODUCTS} active={active} onSelect={(i) => setActive(i)} />
     </div>
   );
 }
 
 function FilmStrip({
   products,
-  tick,
+  active,
   onSelect,
 }: {
   products: Product[];
-  tick: number;
+  active: number;
   onSelect: (i: number) => void;
 }) {
   const FRAME_H = 126;
@@ -242,14 +250,14 @@ function FilmStrip({
   const STEP = FRAME_H + GAP;
   const VISIBLE = 3;
   const N = products.length;
-  // Per-frame duration must match the parent tick interval so the highlighted
+  // Per-frame duration must match the parent rAF cadence so the highlighted
   // product visually aligns with the centered frame during the hold phase.
   const PER_FRAME_MS = 3500;
   const totalMs = N * PER_FRAME_MS;
 
-  const active = ((tick % N) + N) % N;
   // Triple the strip so the CSS loop never reveals a gap.
   const rendered = [...products, ...products, ...products];
+
 
   // Build "hold then slide" keyframes: each frame holds for HOLD_RATIO of
   // its cell, then slides one STEP to the next over the remaining time.
