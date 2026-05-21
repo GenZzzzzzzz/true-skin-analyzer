@@ -408,12 +408,8 @@ function ReportPage() {
           </div>
         </div>
 
-        {/* Skin Age Impact — Regenerative Bio hero number */}
-        {report.skinAgeImpact && <SkinAgeImpactCard impact={report.skinAgeImpact} />}
-
-
-
         {/* Face hotspot map — minimal, no side breakdown */}
+
         <div className="mt-6 stereo-card rounded-3xl p-6 md:p-8 overflow-hidden">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
