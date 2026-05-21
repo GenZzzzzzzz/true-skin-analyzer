@@ -332,10 +332,6 @@ function ReportPage() {
             </div>
             <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70 shadow-[0_0_8px] shadow-emerald-400/60" />
-                安全
-              </span>
-              <span className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80 shadow-[0_0_8px] shadow-amber-400/70" />
                 留意
               </span>
