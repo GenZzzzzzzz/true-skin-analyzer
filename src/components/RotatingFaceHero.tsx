@@ -157,7 +157,7 @@ export function RotatingFaceHero() {
           <g filter="url(#hero-bleed)">
             {product.zones.map((z, i) => {
               const rgb = z.tone === "red" ? "240,40,40" : "250,165,30";
-              return <path key={i} d={z.d} fill={`rgba(${rgb},0.7)`} />;
+              return <path key={i} d={Z[z.key]} fill={`rgba(${rgb},0.7)`} />;
             })}
           </g>
         </svg>
@@ -181,7 +181,7 @@ export function RotatingFaceHero() {
               return (
                 <path
                   key={i}
-                  d={z.d}
+                  d={Z[z.key]}
                   fill={`rgba(${rgb},0.7)`}
                   className={z.tone === "red" ? "animate-pulse" : ""}
                 />
@@ -189,7 +189,39 @@ export function RotatingFaceHero() {
             })}
           </g>
         </svg>
+
+        {/* Issue label chips — anchored to each zone centroid */}
+        <div
+          key={`labels-${active}`}
+          className="absolute inset-0 pointer-events-none zone-fade-in"
+        >
+          {product.zones.map((z, i) => {
+            const meta = ZONE_META[z.key];
+            const isRed = z.tone === "red";
+            return (
+              <div
+                key={i}
+                className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-medium backdrop-blur-sm"
+                style={{
+                  left: `${meta.cx}%`,
+                  top: `${meta.cy}%`,
+                  background: isRed
+                    ? "rgba(244, 63, 94, 0.22)"
+                    : "rgba(250, 165, 30, 0.20)",
+                  borderColor: isRed
+                    ? "rgba(253, 164, 175, 0.55)"
+                    : "rgba(252, 211, 77, 0.55)",
+                  color: isRed ? "#fecdd3" : "#fde68a",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.6)",
+                }}
+              >
+                {meta.issue}
+              </div>
+            );
+          })}
+        </div>
       </div>
+
 
       <FilmStrip products={PRODUCTS} tick={tick} onSelect={(i) => setTick(i)} />
     </div>
