@@ -1,73 +1,117 @@
-# 报告页人脸 · 质量大幅提升（重画底图 + 多层光影）
 
-在不引入 Three.js 的前提下，把那块"立体人脸"做到肉眼可感的明显升级。两条并行升级：**A）premium 重画一张影室级写实底图**；**B）在现有 Stereo3DFace 容器里加多层光影与发光优化**。色块定位精度保持不变。
+# 新增输出:「使用这款产品,你的皮肤会衰老多少岁」
 
-## 一、底图升级（premium 重画）
+把产品适配度报告升级一个"再生生物学 (Regenerative Bio)"角度的钩子——一个让评委一眼记住的数字:**预计皮肤生物学年龄变化 (Skin Age Impact)**。
 
-用 `imagegen` premium 生成一张新的中性写实人脸：
-- 正面、闭眼/平视、无表情、无配饰
-- 影室级三点布光（主光左上 45°、补光右侧、轮廓光）
-- 皮肤有真实毛孔与微高光，但磨皮干净统一
-- 中性偏冷的深色背景（与现在径向渐变融合）
-- 头部居中，发际线 ≈ y8%、下巴 ≈ y92%，与现有 `FACE_ZONES` 坐标系完全对齐
-- 出图 2x 分辨率（约 1024×1280），保留细节
+这也正好把项目和黑客松 Regenerative Bio 主题强绑定。
 
-保存为 `src/assets/face-mesh-v2.png`，替换 `report.tsx` 里的 `faceMeshImg` 引用。**保留旧文件**作为回退。
+---
 
-如果出图与原图轮廓位置有偏移，会用 `imagegen edit` 在原图基础上重渲质感而不改构图，保证色块仍然落在对应皮肤区。
+## 一、核心新字段
 
-## 二、Stereo3DFace 光影升级
+在 `CompatibilityReport` 上新增:
 
-修改 `src/components/Stereo3DFace.tsx`，在保留视差的基础上新增：
+```ts
+skinAgeImpact: {
+  years: number;              // 例: +1.8 (变老) / -0.5 (有改善)
+  direction: "aging" | "neutral" | "rejuvenating";
+  horizon: "12_months";       // 固定:按持续使用 12 个月估算
+  confidence: "低" | "中" | "高";
+  drivers: Array<{            // 哪些成分 × 哪些机制 贡献了这个数字
+    factor: string;           // 例: "高浓度酒精"
+    mechanism: string;        // 例: "屏障破坏 → 经皮失水加速 → 胶原降解"
+    contributionYears: number;// 例: +0.6
+  }>;
+  caveat: string;             // 免责声明:估算模型,不构成医学诊断
+}
+```
 
-1. **点光源高光（皮肤次表面散射感）**
-   - 当前的 `radial-gradient` 高光升级为两层：
-     - 内层：小而亮的 specular 高光（白色，半径 15%）
-     - 外层：宽柔的次表面散射（暖肉色 `oklch(0.85 0.08 30)`，半径 60%，blur）
-   - 都跟随 `--mx/--my` 移动
+## 二、AI 评分规则 (确定性,避免同输入不同输出)
 
-2. **环境光遮蔽 (AO) 暗角**
-   - 容器四角加柔和暗角，让脸"陷进"舞台而不是浮在表面
-   - 用 `radial-gradient(120% 90% at 50% 50%, transparent 50%, rgba(0,0,0,0.55) 100%)` 替换现有 vignette
+在 `SYSTEM_PROMPT` 里追加一段固定算法,让模型按规则算而不是凭感觉:
 
-3. **底部接触阴影**
-   - 在内层底部加一道贴地的椭圆暗影 `box-shadow` 模拟脸下方阴影
+```text
+H. Skin Age Impact (假设每日规律使用 12 个月):
+   起始值 = 0.0 岁
+   按"成分 × 肤质特征"映射累加:
+   - 致老化机制 (氧化应激/糖化/屏障破坏/光敏化/慢性炎症):
+       高风险组合  +0.6 岁
+       中风险组合  +0.3 岁
+   - 抗老化/再生机制 (抗氧化、促胶原、屏障修复、senolytic-like):
+       明确证据    -0.5 岁
+       潜在支持    -0.2 岁
+   - 防晒类产品额外:若 SPF≥30 且 PA+++ 以上, -0.8 岁 (抑制光老化)
+   - 上限 +5.0 / 下限 -2.0,保留 1 位小数
+   direction: years>+0.3 → aging;-0.3..+0.3 → neutral;<-0.3 → rejuvenating
+   confidence:成分清单完整且与肤质特征明确对应 → 高;部分识别 → 中;识别度低 → 低
+   drivers:列出贡献最大的 2-4 项,contributionYears 之和应≈years
+```
 
-4. **倾斜时的光照偏移**
-   - 鼠标在右侧时，整体亮度向左衰减 1-2%；模拟"侧光"
-   - 用一层 `linear-gradient` 跟随 `--ry` 移动
+并在 `TOOL_SCHEMA.parameters` 中加入 `skinAgeImpact` 同结构,设为 required。
+temperature/seed 已是 0/42,保证同输入同输出。
 
-5. **景深焦外**
-   - 边缘 5% 区域加轻微 blur(0.5px)，模拟相机浅景深
+## 三、报告页 UI (`src/routes/report.tsx`)
 
-## 三、色块层（让发光更"皮下透出来"）
+在现有 compatibilityScore 卡片旁(或正上方)新增一个 **「Skin Age Impact」英雄数字卡**:
 
-在 `report.tsx` 的 SVG 色块层增强：
-- 给每个填充 path 加 SVG `<filter>` 实现 **inner glow**：
-  - `feGaussianBlur` + `feComposite in="SourceGraphic" operator="in"` → 边缘内发光
-- 整个色块组改用 `mix-blend-mode: soft-light`（替代 `multiply`），让红/黄看起来像皮下渗出而不是贴上去
-- "重灾区"色块的脉冲呼吸加大幅度（透明度 0.4 → 0.7），更醒目
+```
+┌─────────────────────────────────────────────┐
+│  使用 12 个月后,你的皮肤预计               │
+│                                             │
+│      +1.8 岁                                │
+│      ▲ 加速衰老                             │
+│                                             │
+│  主要驱动:                                  │
+│   • 高浓度变性酒精        +0.6  屏障破坏    │
+│   • 香精复合物            +0.4  慢性炎症    │
+│   • 缺乏抗氧化协同        +0.8  氧化应激    │
+│                                             │
+│  置信度:中   *估算模型,非医学诊断          │
+└─────────────────────────────────────────────┘
+```
 
-## 四、文件改动一览
+视觉:
+- 数字 7xl,根据 direction 用 token 颜色 (aging→destructive、rejuvenating→primary/绿、neutral→muted)
+- 加一个细的指针条:`-2 岁 ←──●──→ +5 岁`
+- driver 列表用现有 Card 风格
+- 与上方 Stereo3DFace + 色块层视觉呼应:加上"皮肤老化贡献"叠加在脸上的可选副标题
 
-新建：
-- `src/assets/face-mesh-v2.png`（premium 重画）
+## 四、首页文案配合升级 (`src/routes/index.tsx`)
 
-改写：
-- `src/components/Stereo3DFace.tsx`（多层光影 + 接触阴影 + 景深）
-- `src/routes/report.tsx`：
-  - 替换 `faceMeshImg` import 指向 v2
-  - 给色块 SVG 加 inner-glow filter，调 blend-mode
+把当前 hero 标语升级为:
 
-不动：
-- `FACE_ZONES` 数据与坐标
-- 报告其他模块
-- 视差交互逻辑（已通过用户验收）
+> **拍张脸,扫个化妆品 —— 看它一年后会让你老几岁。**
+>
+> 基于成分-肤质再生生物学映射,量化你日常护肤的真实代价。
 
-## 验收
+(保留下方原"爆痘/过敏"副文案作为支撑。)
 
-- 新底图：影室级布光，皮肤质感清晰，构图与旧图等价（色块不偏）
-- 鼠标移动：高光跟随，且呈现"亮点 + 大柔光"两层，像真实皮肤反光
-- 容器：四周自然暗下去，脸看起来"嵌"在玻璃舞台里
-- 色块：从图层里"渗出"，而非贴在表面
-- 移动端 / reduce-motion：仍可正常显示静态精修效果
+## 五、文件改动一览
+
+改写:
+- `src/lib/compatibility-types.ts` — 新增 `SkinAgeImpact` 类型,挂到 `CompatibilityReport`
+- `src/lib/compatibility.functions.ts` — SYSTEM_PROMPT 加规则 H;TOOL_SCHEMA 加 `skinAgeImpact` required
+- `src/routes/report.tsx` — 新增英雄卡组件 + driver 列表
+- `src/routes/index.tsx` — 升级 hero 标语
+
+不动:
+- 现有 compatibilityScore / risks / radar 逻辑保持不变,新字段是叠加
+- 分析流程、上传逻辑、Stereo3DFace 等
+
+## 六、验收
+
+- 报告页顶部能看到一个醒目的「+X.X 岁 / -X.X 岁」大数字
+- 下方列出 2-4 条具体驱动因素(成分 × 机制 × 贡献年数)
+- 同一张脸 + 同一款产品两次提交,数字一致 (temperature=0, seed=42)
+- 数字带置信度与免责声明,避免被当作医学结论
+- 首页标语呼应这个新输出
+
+---
+
+## 黑客松层面的好处 (Mu Shanghai · Regenerative Bio)
+
+- 把"化妆品风险检测"重新框架成 **Skin Longevity / 皮肤生物学年龄**,直接命中 Regenerative Bio 主题
+- 一个具体数字 (+1.8 岁) 是评委记得住的"哇时刻",pitch 里 demo 这一屏就够了
+- driver 列表 (成分 × 机制) 展示了科学深度,不是黑箱打分
+
+确认后我就按这个方案改。
