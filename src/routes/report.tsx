@@ -511,10 +511,7 @@ function ReportPage() {
                             : "bg-amber-400/20 border-amber-300/40 text-amber-100"
                         }`}
                       >
-                        <div>{z.label}</div>
-                        <div className={`mt-0.5 text-[9px] font-normal ${isHot ? "text-rose-200/85" : "text-amber-200/85"}`}>
-                          {z.hint}
-                        </div>
+                        {z.hint}
                       </div>
                     </div>
                   );
