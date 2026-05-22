@@ -72,6 +72,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "theme-color", content: "#15131f" },
+      { name: "color-scheme", content: "dark" },
+      { name: "format-detection", content: "telephone=no" },
       { title: "SkinSense — AI 肤质精准分析" },
       { name: "description", content: "拍一张脸，AI 即时分析 7 项肤质指标，给你专属护肤报告。" },
       { name: "author", content: "SkinSense" },
