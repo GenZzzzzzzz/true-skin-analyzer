@@ -533,7 +533,7 @@ function ReportPage() {
                             : "bg-amber-400/20 border-amber-300/40 text-amber-100"
                         }`}
                       >
-                        {z.hint}
+                        {getZoneTopIssue(z, report.riskRadar)}
                       </div>
                     </div>
                   );
