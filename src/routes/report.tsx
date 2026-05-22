@@ -112,6 +112,28 @@ function getZoneIntensity(zone: FaceZone, radar: RiskRadar): number {
   return max; // 0-100
 }
 
+const DRIVER_ISSUE: Record<keyof RiskRadar, string> = {
+  oiliness: "出油",
+  comedogenic: "闭口闷痘",
+  irritation: "泛红刺激",
+  allergy: "过敏",
+  dryness: "干燥",
+  photo: "晒伤",
+};
+
+function getZoneTopIssue(zone: FaceZone, radar: RiskRadar): string {
+  let topKey = zone.drivers[0];
+  let topVal = -1;
+  for (const k of zone.drivers) {
+    const v = radar[k] ?? 0;
+    if (v > topVal) {
+      topVal = v;
+      topKey = k;
+    }
+  }
+  return DRIVER_ISSUE[topKey] ?? zone.hint;
+}
+
 function intensityLabel(v: number): { text: string; color: string } {
   if (v >= 70) return { text: "重灾区", color: "text-rose-300" };
   if (v >= 45) return { text: "需留意", color: "text-amber-300" };
@@ -511,7 +533,7 @@ function ReportPage() {
                             : "bg-amber-400/20 border-amber-300/40 text-amber-100"
                         }`}
                       >
-                        {z.hint}
+                        {getZoneTopIssue(z, report.riskRadar)}
                       </div>
                     </div>
                   );
