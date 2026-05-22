@@ -150,7 +150,7 @@ const VERDICT_MAP: Record<Verdict, { label: string; sub: string }> = {
 export const Route = createFileRoute("/report")({
   head: () => ({
     meta: [
-      { title: "适配度报告 — SkinMatch" },
+      { title: "适配度报告 — 皮痒了" },
       { name: "description", content: "查看 AI 对这款产品与你皮肤的适配度评估。" },
     ],
   }),

@@ -12,12 +12,12 @@ import { analyzeCompatibility } from "@/lib/compatibility.functions";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SkinMatch — AI 化妆品 × 肤质适配度" },
+      { title: "皮痒了 — AI 化妆品 × 肤质适配度" },
       {
         name: "description",
         content: "拍一张脸 + 一张化妆品，AI 即时分析这款产品对你皮肤的适配度与潜在风险。",
       },
-      { property: "og:title", content: "SkinMatch — AI 适配度分析" },
+      { property: "og:title", content: "皮痒了 — AI 适配度分析" },
       {
         property: "og:description",
         content: "拍一张脸 + 一张化妆品，AI 即时分析适配度。",
@@ -199,7 +199,7 @@ function Home() {
 
       <footer className="border-t border-border">
         <div className="mx-auto max-w-6xl px-6 py-6 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} SkinMatch · 仅供日常护肤参考，不构成医学诊断
+          © {new Date().getFullYear()} 皮痒了 · 仅供日常护肤参考，不构成医学诊断
         </div>
       </footer>
 
