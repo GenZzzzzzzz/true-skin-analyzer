@@ -505,13 +505,16 @@ function ReportPage() {
                       style={{ left: `${z.labelX}%`, top: `${z.labelY}%` }}
                     >
                       <div
-                        className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-medium backdrop-blur-md border ${
+                        className={`whitespace-nowrap rounded-lg px-2 py-1 text-[10px] font-medium backdrop-blur-md border leading-tight text-center ${
                           isHot
                             ? "bg-rose-500/25 border-rose-300/40 text-rose-100"
                             : "bg-amber-400/20 border-amber-300/40 text-amber-100"
                         }`}
                       >
-                        {z.label}
+                        <div>{z.label}</div>
+                        <div className={`mt-0.5 text-[9px] font-normal ${isHot ? "text-rose-200/85" : "text-amber-200/85"}`}>
+                          {z.hint}
+                        </div>
                       </div>
                     </div>
                   );
