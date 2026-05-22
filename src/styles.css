@@ -95,12 +95,23 @@
   }
   /* Apple-style stereo / depth card */
   .stereo-card {
+    /* WeChat X5 fallback — solid colors that don't rely on color-mix/oklch */
+    background: linear-gradient(180deg, rgba(40, 36, 56, 0.92), rgba(22, 19, 36, 0.88));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.14),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.3),
+      0 1px 2px 0 rgba(0, 0, 0, 0.3),
+      0 20px 60px -20px rgba(0, 0, 0, 0.55),
+      0 4px 16px -4px rgba(0, 0, 0, 0.35);
+    /* Modern browsers — overrides fallback when supported */
     background:
       linear-gradient(180deg,
         color-mix(in oklab, var(--surface) 92%, transparent),
         color-mix(in oklab, var(--background) 88%, transparent));
     border: 1px solid color-mix(in oklab, white 10%, transparent);
     backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     box-shadow:
       inset 0 1px 0 0 color-mix(in oklab, white 14%, transparent),
       inset 0 -1px 0 0 color-mix(in oklab, black 30%, transparent),
